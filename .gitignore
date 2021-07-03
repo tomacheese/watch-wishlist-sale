@@ -3,3 +3,4 @@ venv
 before_price.json
 .env
 logs/
+*.pyc
