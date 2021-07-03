@@ -51,8 +51,7 @@ def main():
                     steamGame.get_currency_price(),
                     steamGame.get_currency_name(),
                     min_discount_price,
-                    appid=item["appid"]
-                ),
+                    appid=item["appid"]),
             "inline": False
         })
         set_before_price(item["appid"], steamGame.get_currency_price())
