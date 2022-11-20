@@ -1,11 +1,12 @@
 import json
+import os
 import re
+from datetime import datetime, timezone
 
 import requests
 
-from src import get_lowest_price_from_steamdb, send_to_discord, config, get_before_price, set_before_price, logger
+from src import config, get_before_price, get_lowest_price_from_steamdb, logger, send_to_discord, set_before_price
 from src.SteamGame import SteamGame
-from datetime import datetime, tzinfo, timezone
 
 
 def main():
@@ -17,44 +18,50 @@ def main():
         logger.critical("g_rgWishlistData not found.")
         exit(1)
 
-    fields = []
     items = json.loads("[" + m.group(1) + "]")
-    for item in items:
-        steamGame = SteamGame(item["appid"])
+    appids = [item["appid"] for item in items]
 
-        if steamGame.is_unreleased():
+    if os.path.exists("appids.json"):
+        with open("appids.json", "r") as f:
+            appids.extend(json.load(f))
+
+    fields = []
+    for appid in appids:
+        steam_game = SteamGame(appid)
+
+        if steam_game.is_unreleased():
             continue  # 未発売
 
         logger.info(
-            steamGame.get_game_name(),
-            str(steamGame.get_currency_price()) + "(" + steamGame.get_currency_name() + ")",
-            str(steamGame.get_discount_percent()) + "%"
+            steam_game.get_game_name(),
+            str(steam_game.get_currency_price()) + "(" + steam_game.get_currency_name() + ")",
+            str(steam_game.get_discount_percent()) + "%"
         )
 
-        if steamGame.get_discount_percent() == 0:
+        if steam_game.get_discount_percent() == 0:
             logger.info("-> 未割引")
             continue  # 未割引
 
-        if get_before_price(item["appid"]) == steamGame.get_currency_price():
+        if get_before_price(appid) == steam_game.get_currency_price():
             logger.info("-> 前回のチェックと変わってない")
             continue  # 前回のチェックと変わってない
 
-        min_discount_price, min_discount_time = get_lowest_price_from_steamdb(item["appid"])
+        min_discount_price, min_discount_time = get_lowest_price_from_steamdb(appid)
 
         fields.append({
-            "name": steamGame.get_game_name() + " -" + str(steamGame.get_discount_percent()) + "%",
+            "name": steam_game.get_game_name() + " -" + str(steam_game.get_discount_percent()) + "%",
             "value":
                 "{}円 -> {}円[{}] (最安値: {}円)\n"
                 "https://steamdb.info/app/{appid}/\n"
                 "https://store.steampowered.com/app/{appid}/".format(
-                    steamGame.get_initial_price(),
-                    steamGame.get_currency_price(),
-                    steamGame.get_currency_name(),
+                    steam_game.get_initial_price(),
+                    steam_game.get_currency_price(),
+                    steam_game.get_currency_name(),
                     min_discount_price,
-                    appid=item["appid"]),
+                    appid=appid),
             "inline": False
         })
-        set_before_price(item["appid"], steamGame.get_currency_price())
+        set_before_price(appid, steam_game.get_currency_price())
 
     if len(fields) == 0:
         logger.info("len(fields) == 0")
