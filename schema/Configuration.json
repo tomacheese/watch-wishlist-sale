@@ -1,0 +1,40 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "properties": {
+        "discord": {
+            "description": "Discord webhook URL or bot token",
+            "properties": {
+                "channel_id": {
+                    "description": "Discord channel ID (required if using bot)",
+                    "type": "string"
+                },
+                "token": {
+                    "description": "Discord bot token (required if using bot)",
+                    "type": "string"
+                },
+                "webhook_url": {
+                    "description": "Discord webhook URL (required if using webhook)",
+                    "type": "string"
+                }
+            },
+            "type": "object"
+        },
+        "steam": {
+            "properties": {
+                "profile_id": {
+                    "description": "Steam profile ID",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "profile_id"
+            ],
+            "type": "object"
+        }
+    },
+    "required": [
+        "discord"
+    ],
+    "type": "object"
+}
+
