@@ -1,6 +1,6 @@
-venv
-.idea
-before_price.json
-.env
-logs/
-*.pyc
+node_modules/
+dist/
+data/*
+!data/.gitkeep
+config.json
+*.env

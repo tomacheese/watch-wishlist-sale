@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    volumes:
+      - type: bind
+        source: ./data
+        target: /data
+    ports:
+      - 5900:5900
+    init: true
