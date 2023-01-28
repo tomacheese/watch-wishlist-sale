@@ -27,15 +27,19 @@ const isConfig = (config: any): config is Configuration => {
   return (
     config &&
     typeof config.discord === 'object' &&
-    // webhook_url がない場合は、token と channel_id がなければならない
+    // webhook_url があるか token と channel_id があるか
     (config.discord.webhook_url ||
       (config.discord.token && config.discord.channel_id)) &&
-    // token がある場合は、channel_id がなければならない
-    (!config.discord.token || config.discord.channel_id) &&
-    // token と channel_id がない場合は、webhook_url がなければならない
-    (!config.discord.token ||
-      !config.discord.channel_id ||
-      config.discord.webhook_url) &&
+    // webhook_url があるとき、string である
+    (config.discord.webhook_url === undefined ||
+      typeof config.discord.webhook_url === 'string') &&
+    // token があるとき、string である
+    (config.discord.token === undefined ||
+      typeof config.discord.token === 'string') &&
+    // channel_id があるとき、string である
+    (config.discord.channel_id === undefined ||
+      typeof config.discord.channel_id === 'string') &&
+    // steam がないか、あるなら profile_id がある
     (config.steam === undefined ||
       (config.steam && typeof config.steam.profile_id === 'string'))
   )
