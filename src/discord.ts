@@ -85,6 +85,7 @@ export async function sendDiscordMessage(
       `https://discord.com/api/channels/${config.discord.channel_id}/messages`,
       {
         content: `${text}`,
+        embeds: embed ? [embed] : undefined,
       },
       {
         headers: {
