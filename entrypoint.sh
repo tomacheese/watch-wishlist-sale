@@ -7,7 +7,7 @@ x11vnc -forever -noxdamage -display :99 -nopw -loop -xkb &
 
 while :
 do
-  node index.js
+  yarn start
 
   # wait 1 hour
   sleep 3600
