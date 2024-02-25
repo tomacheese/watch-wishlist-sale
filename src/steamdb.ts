@@ -1,3 +1,4 @@
+import { Logger } from '@book000/node-utils'
 import puppeteer, {
   BrowserConnectOptions,
   BrowserLaunchArgumentOptions,
@@ -113,7 +114,8 @@ export class SteamDB {
   }
 
   private getApiResponse<T>(page: Page, method: string, url: string) {
-    return new Promise<T>((resolve) => {
+    const logger = Logger.configure('SteamDB:getApiResponse')
+    return new Promise<T>((resolve, reject) => {
       const emitter = page.on('requestfinished', (request) => {
         const response = request.response()
         if (!response) {
@@ -124,14 +126,20 @@ export class SteamDB {
           return
         }
         const requestMethod = response.request().method()
-        console.log(requestMethod + ' ' + requestUrl)
+        logger.info(requestMethod + ' ' + requestUrl)
         if (requestMethod.toUpperCase() !== method.toUpperCase()) {
           return
         }
-        response.json().then((json) => {
-          emitter.removeAllListeners()
-          resolve(json)
-        })
+        response
+          .json()
+          .then((json) => {
+            emitter.removeAllListeners()
+            resolve(json)
+          })
+          .catch((error) => {
+            emitter.removeAllListeners()
+            reject(error)
+          })
       })
     })
   }
@@ -140,9 +148,9 @@ export class SteamDB {
 export async function getLowestPrice(appId: number) {
   const steamDB = await SteamDB.getInstance()
   const priceHistory = await steamDB.getPriceHistory(appId)
-  steamDB.close()
-  const lowestPrice = priceHistory.history.reduce((prev, current) => {
-    return prev.y < current.y ? prev : current
+  await steamDB.close()
+  const lowestPrice = priceHistory.history.reduce((previous, current) => {
+    return previous.y < current.y ? previous : current
   })
   return lowestPrice
 }

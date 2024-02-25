@@ -1,4 +1,4 @@
-import fs from 'node:fs'
+import { ConfigFramework } from '@book000/node-utils'
 
 export const PATH = {
   config: process.env.CONFIG_PATH || 'data/config.json',
@@ -6,7 +6,7 @@ export const PATH = {
   notified: process.env.NOTIFIED_PATH || 'data/notified.json',
 }
 
-export interface Configuration {
+export interface ConfigInterface {
   /** Discord webhook URL or bot token */
   discord: {
     /** Discord webhook URL (required if using webhook) */
@@ -22,36 +22,31 @@ export interface Configuration {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const isConfig = (config: any): config is Configuration => {
-  return (
-    config &&
-    typeof config.discord === 'object' &&
-    // webhook_url があるか token と channel_id があるか
-    (config.discord.webhook_url ||
-      (config.discord.token && config.discord.channel_id)) &&
-    // webhook_url があるとき、string である
-    (config.discord.webhook_url === undefined ||
-      typeof config.discord.webhook_url === 'string') &&
-    // token があるとき、string である
-    (config.discord.token === undefined ||
-      typeof config.discord.token === 'string') &&
-    // channel_id があるとき、string である
-    (config.discord.channel_id === undefined ||
-      typeof config.discord.channel_id === 'string') &&
-    // steam がないか、あるなら profile_id がある
-    (config.steam === undefined ||
-      (config.steam && typeof config.steam.profile_id === 'string'))
-  )
-}
-
-export function loadConfig(): Configuration {
-  if (!fs.existsSync(PATH.config)) {
-    throw new Error('Config file not found')
+export class Configuration extends ConfigFramework<ConfigInterface> {
+  protected validates(): {
+    [key: string]: (config: ConfigInterface) => boolean
+  } {
+    return {
+      'discord is required': (config) => !!config.discord,
+      'discord is object': (config) => typeof config.discord === 'object',
+      'discord.webhook_url or discord.token and discord.channel_id is required':
+        (config) =>
+          !!(
+            config.discord.webhook_url ||
+            (config.discord.token && config.discord.channel_id)
+          ),
+      'discord.webhook_url is string': (config) =>
+        config.discord.webhook_url === undefined ||
+        typeof config.discord.webhook_url === 'string',
+      'discord.token is string': (config) =>
+        config.discord.token === undefined ||
+        typeof config.discord.token === 'string',
+      'discord.channel_id is string': (config) =>
+        config.discord.channel_id === undefined ||
+        typeof config.discord.channel_id === 'string',
+      'steam.profile_id is string': (config) =>
+        config.steam === undefined ||
+        (config.steam && typeof config.steam.profile_id === 'string'),
+    }
   }
-  const config = JSON.parse(fs.readFileSync(PATH.config, 'utf8'))
-  if (!isConfig(config)) {
-    throw new Error('Invalid config')
-  }
-  return config
 }
