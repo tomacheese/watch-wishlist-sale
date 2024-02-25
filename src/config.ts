@@ -29,13 +29,12 @@ export class Configuration extends ConfigFramework<ConfigInterface> {
     return {
       'discord is required': (config) => !!config.discord,
       'discord is object': (config) => typeof config.discord === 'object',
-      'discord.webhook_url or discord.token and discord.channel_id is required': (
-        config
-      ) =>
-        !!(
-          config.discord.webhook_url ||
-          (config.discord.token && config.discord.channel_id)
-        ),
+      'discord.webhook_url or discord.token and discord.channel_id is required':
+        (config) =>
+          !!(
+            config.discord.webhook_url ||
+            (config.discord.token && config.discord.channel_id)
+          ),
       'discord.webhook_url is string': (config) =>
         config.discord.webhook_url === undefined ||
         typeof config.discord.webhook_url === 'string',
