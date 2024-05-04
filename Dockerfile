@@ -1,4 +1,4 @@
-FROM zenika/alpine-chrome:with-puppeteer as runner
+FROM zenika/alpine-chrome:with-puppeteer-xvfb as runner
 
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME/bin:$PATH"
@@ -9,11 +9,12 @@ USER root
 # hadolint ignore=DL3018,DL3016
 RUN apk upgrade --no-cache --available && \
   apk update && \
-  apk add --update --no-cache tzdata && \
+  apk add --update --no-cache tzdata x11vnc && \
   cp /usr/share/zoneinfo/Asia/Tokyo /etc/localtime && \
   echo "Asia/Tokyo" > /etc/timezone && \
   apk del tzdata && \
-  npm install -g pnpm
+  npm install -g corepack && \
+  corepack enable
 
 WORKDIR /app
 
@@ -31,8 +32,6 @@ RUN chmod +x ./entrypoint.sh
 
 ENV TZ Asia/Tokyo
 ENV NODE_ENV production
-ENV DISPLAY :99
-ENV CHROMIUM_PATH=/usr/bin/chromium-browser
 ENV CONFIG_PATH /data/config.json
 ENV CHROMIUM_PATH /usr/bin/chromium-browser
 ENV LOG_DIR /data/logs/
