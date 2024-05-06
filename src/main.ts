@@ -4,7 +4,7 @@ import { getApps, WishlistItem } from './steam'
 import axios from 'axios'
 import { Notified } from './notified'
 import { getLowestPrice } from './steamdb'
-import { Discord, Logger } from '@book000/node-utils'
+import { Discord, DiscordEmbedField, Logger } from '@book000/node-utils'
 
 function getProfileId(config: Configuration): string {
   if (process.env.STEAM_PROFILE_ID) {
@@ -88,6 +88,9 @@ async function main() {
     return true
   })
   const filteredApps = saleApps.filter((app) => {
+    if (!app.price_overview) {
+      return false
+    }
     const currencyPrice = app.price_overview.final / 100
     // 通知済み (前回の価格と同じ)
     return !Notified.isNotified(app.steam_appid, currencyPrice)
@@ -105,7 +108,8 @@ async function main() {
   )
 
   // Discord に通知 (Field は 25 までという制限を忘れずに)
-  const chunkedFilteredApps = filteredApps.reduce(
+  // eslint-disable-next-line unicorn/no-array-reduce
+  const chunkedFilteredApps = filteredApps.reduce<(typeof filteredApps)[]>(
     (accumulator, app, index) => {
       const chunkIndex = Math.floor(index / 25)
       if (!accumulator[chunkIndex]) {
@@ -114,30 +118,35 @@ async function main() {
       accumulator[chunkIndex].push(app)
       return accumulator
     },
-    [] as (typeof filteredApps)[]
+    []
   )
   for (const apps of chunkedFilteredApps) {
-    const fields = apps.map((app) => {
-      const currency = app.price_overview.currency
-      const initialPrice = app.price_overview.initial / 100
-      const currencyPrice = app.price_overview.final / 100
-      const discountPercent = app.price_overview.discount_percent
-      const lowestPriceHistory = steamDBLowestPrices.find(
-        (lowestPrice) => lowestPrice.appId === app.steam_appid
-      )
-      const lowestPrice = lowestPriceHistory
-        ? lowestPriceHistory.history.y
-        : 'NULL'
+    const fields = apps
+      .map((app) => {
+        if (!app.price_overview) {
+          return null
+        }
+        const currency = app.price_overview.currency
+        const initialPrice = app.price_overview.initial / 100
+        const currencyPrice = app.price_overview.final / 100
+        const discountPercent = app.price_overview.discount_percent
+        const lowestPriceHistory = steamDBLowestPrices.find(
+          (lowestPrice) => lowestPrice.appId === app.steam_appid
+        )
+        const lowestPrice = lowestPriceHistory
+          ? lowestPriceHistory.history.y
+          : 'NULL'
 
-      const urlSteamDB = `https://steamdb.info/app/${app.steam_appid}/`
-      const urlSteam = `https://store.steampowered.com/app/${app.steam_appid}/`
+        const urlSteamDB = `https://steamdb.info/app/${app.steam_appid}/`
+        const urlSteam = `https://store.steampowered.com/app/${app.steam_appid}/`
 
-      return {
-        name: `${app.name} -${discountPercent}%`,
-        value: `${initialPrice}円 -> ${currencyPrice}円[${currency}] (最安値: ${lowestPrice}円)\n${urlSteamDB}\n${urlSteam}`,
-        inline: true,
-      }
-    })
+        return {
+          name: `${app.name} -${discountPercent}%`,
+          value: `${initialPrice}円 -> ${currencyPrice}円[${currency}] (最安値: ${lowestPrice}円)\n${urlSteamDB}\n${urlSteam}`,
+          inline: true,
+        }
+      })
+      .filter((field) => field !== null) as DiscordEmbedField[]
 
     if (!isFirst) {
       await discord.sendMessage({
@@ -153,6 +162,9 @@ async function main() {
     }
 
     for (const app of apps) {
+      if (!app.price_overview) {
+        continue
+      }
       logger.info(
         `🔔 Set notified: ${app.name} (${app.steam_appid}) - ${
           app.price_overview.final / 100
@@ -178,7 +190,7 @@ async function main() {
 
 ;(async () => {
   const logger = Logger.configure('main')
-  await main().catch((error) => {
+  await main().catch((error: unknown) => {
     logger.error('❌ Error', error as Error)
     // eslint-disable-next-line unicorn/no-process-exit
     process.exit(1)

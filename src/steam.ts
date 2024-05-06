@@ -142,7 +142,7 @@ export interface AppData {
   legal_notice: string
   developers: string[]
   publishers: string[]
-  price_overview: PriceOverview
+  price_overview?: PriceOverview
   packages: number[]
   package_groups: PackageGroup[]
   platforms: Platforms
@@ -169,14 +169,12 @@ export interface AppResult {
   data: AppData
 }
 
-export interface AppResponse {
-  [key: number]: AppResult
-}
+export type AppResponse = Record<number, AppResult>
 
 export async function getApp(appId: number): Promise<AppData> {
   const url = `https://store.steampowered.com/api/appdetails?appids=${appId}&cc=JP`
   const response = await axios.get<AppResponse>(url)
-  if (!response.data[appId] || !response.data[appId].success) {
+  if (!response.data[appId].success) {
     throw new Error(`Failed to get app data for app id ${appId}`)
   }
   return response.data[appId].data
