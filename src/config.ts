@@ -1,9 +1,10 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { ConfigFramework } from '@book000/node-utils'
 
 export const PATH = {
-  config: process.env.CONFIG_PATH || 'data/config.json',
-  appIds: process.env.APP_IDS_PATH || 'data/appIds.json',
-  notified: process.env.NOTIFIED_PATH || 'data/notified.json',
+  config: process.env.CONFIG_PATH ?? 'data/config.json',
+  appIds: process.env.APP_IDS_PATH ?? 'data/appIds.json',
+  notified: process.env.NOTIFIED_PATH ?? 'data/notified.json',
 }
 
 export interface ConfigInterface {
@@ -23,16 +24,14 @@ export interface ConfigInterface {
 }
 
 export class Configuration extends ConfigFramework<ConfigInterface> {
-  protected validates(): {
-    [key: string]: (config: ConfigInterface) => boolean
-  } {
+  protected validates(): Record<string, (config: any) => boolean> {
     return {
       'discord is required': (config) => !!config.discord,
       'discord is object': (config) => typeof config.discord === 'object',
       'discord.webhook_url or discord.token and discord.channel_id is required':
         (config) =>
           !!(
-            config.discord.webhook_url ||
+            config.discord.webhook_url ??
             (config.discord.token && config.discord.channel_id)
           ),
       'discord.webhook_url is string': (config) =>
@@ -45,6 +44,7 @@ export class Configuration extends ConfigFramework<ConfigInterface> {
         config.discord.channel_id === undefined ||
         typeof config.discord.channel_id === 'string',
       'steam.profile_id is string': (config) =>
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         config.steam === undefined ||
         (config.steam && typeof config.steam.profile_id === 'string'),
     }

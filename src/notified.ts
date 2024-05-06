@@ -1,6 +1,7 @@
 import fs from 'node:fs'
 import { PATH } from './config'
 
+// eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class Notified {
   public static isFirst(): boolean {
     const path = PATH.notified
@@ -9,7 +10,7 @@ export class Notified {
 
   public static isNotified(appId: number, price: number): boolean {
     const path = PATH.notified
-    const json = fs.existsSync(path)
+    const json: Record<number, number> = fs.existsSync(path)
       ? JSON.parse(fs.readFileSync(path, 'utf8'))
       : {}
     return json[appId] === price
@@ -17,7 +18,7 @@ export class Notified {
 
   public static getAppIds(): number[] {
     const path = PATH.notified
-    const json = fs.existsSync(path)
+    const json: Record<number, number> = fs.existsSync(path)
       ? JSON.parse(fs.readFileSync(path, 'utf8'))
       : {}
     return Object.keys(json).map(Number)
@@ -25,7 +26,7 @@ export class Notified {
 
   public static setNotified(appId: number, price: number): void {
     const path = PATH.notified
-    const json = fs.existsSync(path)
+    const json: Record<number, number> = fs.existsSync(path)
       ? JSON.parse(fs.readFileSync(path, 'utf8'))
       : {}
     json[appId] = price
@@ -34,10 +35,11 @@ export class Notified {
 
   public static removeNotified(appId: number): void {
     const path = PATH.notified
-    const json = fs.existsSync(path)
+    const json: Record<number, number> = fs.existsSync(path)
       ? JSON.parse(fs.readFileSync(path, 'utf8'))
       : {}
     if (!json[appId]) return
+    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
     delete json[appId]
     fs.writeFileSync(path, JSON.stringify(json))
   }

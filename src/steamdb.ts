@@ -19,10 +19,7 @@ export interface History {
   d: number
 }
 
-export interface Sales {
-  /** セール番号とセール名のマップ */
-  [key: number]: string
-}
+export type Sales = Record<number, string>
 
 export interface PriceHistoryData {
   /** 価格履歴 */
@@ -39,7 +36,7 @@ export interface SteamDBPriceHistoryResponse {
 export class SteamDB {
   private static browser: Browser
 
-  // eslint-disable-next-line no-useless-constructor, @typescript-eslint/no-empty-function
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   private constructor() {}
 
   public static async getInstance() {
@@ -74,9 +71,8 @@ export class SteamDB {
     await page.evaluateOnNewDocument(() => {
       // eslint-disable-next-line @typescript-eslint/no-empty-function
       Object.defineProperty(navigator, 'webdriver', () => {})
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      // eslint-disable-next-line no-proto
+      // @ts-expect-error __proto__ is not defined in types
+      // eslint-disable-next-line no-proto, @typescript-eslint/no-unsafe-member-access
       delete navigator.__proto__.webdriver
     })
     await page.goto(`https://steamdb.info/app/${appId}/`, {
@@ -136,9 +132,9 @@ export class SteamDB {
             emitter.removeAllListeners()
             resolve(json)
           })
-          .catch((error) => {
+          .catch((error: unknown) => {
             emitter.removeAllListeners()
-            reject(error)
+            reject(error as Error)
           })
       })
     })
@@ -149,6 +145,7 @@ export async function getLowestPrice(appId: number) {
   const steamDB = await SteamDB.getInstance()
   const priceHistory = await steamDB.getPriceHistory(appId)
   await steamDB.close()
+  // eslint-disable-next-line unicorn/no-array-reduce
   const lowestPrice = priceHistory.history.reduce((previous, current) => {
     return previous.y < current.y ? previous : current
   })
