@@ -3,7 +3,7 @@ import puppeteer, {
   BrowserConnectOptions,
   BrowserLaunchArgumentOptions,
   LaunchOptions,
-  Product,
+  SupportedBrowser,
   Browser,
   Page,
 } from 'puppeteer-core'
@@ -43,7 +43,7 @@ export class SteamDB {
     const puppeteerOptions: LaunchOptions &
       BrowserLaunchArgumentOptions &
       BrowserConnectOptions & {
-        product?: Product
+        supportedBrowser?: SupportedBrowser
         extraPrefsFirefox?: Record<string, unknown>
       } = {
       headless: false,

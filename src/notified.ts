@@ -1,7 +1,6 @@
 import fs from 'node:fs'
 import { PATH } from './config'
 
-// eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class Notified {
   public static isFirst(): boolean {
     const path = PATH.notified
