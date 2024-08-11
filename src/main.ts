@@ -27,7 +27,7 @@ async function getWishlistAppIds(profileId: string): Promise<number[]> {
 }
 
 function getRgWishlistData(html: string): WishlistItem[] {
-  const rgWishlistData = (/var g_rgWishlistData = \[(.+)];/.exec(html))?.[1]
+  const rgWishlistData = /var g_rgWishlistData = \[(.+)];/.exec(html)?.[1]
   if (!rgWishlistData) {
     throw new Error('Failed to get g_rgWishlistData')
   }
