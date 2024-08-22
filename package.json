@@ -28,7 +28,7 @@
     "fix": "run-z fix:prettier,fix:eslint"
   },
   "devDependencies": {
-    "@book000/eslint-config": "1.7.39",
+    "@book000/eslint-config": "1.7.40",
     "@book000/node-utils": "1.13.225",
     "@types/node": "22.4.2",
     "axios": "1.7.4",
