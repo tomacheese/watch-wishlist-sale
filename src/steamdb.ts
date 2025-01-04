@@ -1,12 +1,5 @@
 import { Logger } from '@book000/node-utils'
-import puppeteer, {
-  BrowserConnectOptions,
-  BrowserLaunchArgumentOptions,
-  LaunchOptions,
-  SupportedBrowser,
-  Browser,
-  Page,
-} from 'puppeteer-core'
+import puppeteer, { LaunchOptions, Browser, Page } from 'puppeteer-core'
 
 export interface History {
   /** セール番号 */
@@ -40,12 +33,7 @@ export class SteamDB {
   private constructor() {}
 
   public static async getInstance() {
-    const puppeteerOptions: LaunchOptions &
-      BrowserLaunchArgumentOptions &
-      BrowserConnectOptions & {
-        supportedBrowser?: SupportedBrowser
-        extraPrefsFirefox?: Record<string, unknown>
-      } = {
+    const puppeteerOptions: LaunchOptions = {
       headless: false,
       executablePath: '/usr/bin/chromium-browser',
       args: [
