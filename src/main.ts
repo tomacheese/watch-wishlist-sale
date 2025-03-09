@@ -19,19 +19,19 @@ function getProfileId(config: Configuration): string {
   throw new Error('STEAM_PROFILE_ID or config:steam.profile_id is required')
 }
 
-async function getWishlistAppIds(profileId: string): Promise<number[]> {
-  const url = `https://store.steampowered.com/wishlist/id/${profileId}/`
-  const response = await axios.get(url)
-  const rgWishlistData = getRgWishlistData(response.data)
-  return rgWishlistData.map((item) => item.appid)
-}
-
 function getRgWishlistData(html: string): WishlistItem[] {
   const rgWishlistData = /var g_rgWishlistData = \[(.+)];/.exec(html)?.[1]
   if (!rgWishlistData) {
     throw new Error('Failed to get g_rgWishlistData')
   }
   return JSON.parse(`[${rgWishlistData}]`) as WishlistItem[]
+}
+
+async function getWishlistAppIds(profileId: string): Promise<number[]> {
+  const url = `https://store.steampowered.com/wishlist/id/${profileId}/`
+  const response = await axios.get(url)
+  const rgWishlistData = getRgWishlistData(response.data)
+  return rgWishlistData.map((item) => item.appid)
 }
 
 async function main() {
