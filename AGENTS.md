@@ -25,3 +25,4 @@
 - ログに機密情報を出力しない。
 
 ## リポジトリ固有
+- 目的: Check your Steam wishlist and notify you via Discord of the price, discount rate, and the lowest price in SteamDB.

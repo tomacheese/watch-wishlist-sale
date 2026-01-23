@@ -94,3 +94,4 @@ pnpm install
 6. PR 本文の崩れがないことを確認する。
 
 ## リポジトリ固有
+- 目的: Check your Steam wishlist and notify you via Discord of the price, discount rate, and the lowest price in SteamDB.
