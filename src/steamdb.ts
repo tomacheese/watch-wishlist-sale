@@ -120,9 +120,9 @@ export class SteamDB {
             emitter.removeAllListeners()
             resolve(json)
           })
-          .catch((error: unknown) => {
+          .catch((err: unknown) => {
             emitter.removeAllListeners()
-            reject(error as Error)
+            reject(err as Error)
           })
       })
     })
