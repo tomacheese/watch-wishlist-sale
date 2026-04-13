@@ -1,5 +1,3 @@
-import axios from 'axios'
-
 export interface WishlistItem {
   appid: number
   priority: number
@@ -173,11 +171,13 @@ export type AppResponse = Record<number, AppResult>
 
 export async function getApp(appId: number): Promise<AppData> {
   const url = `https://store.steampowered.com/api/appdetails?appids=${appId}&cc=JP`
-  const response = await axios.get<AppResponse>(url)
-  if (!response.data[appId].success) {
+  const res = await fetch(url)
+  if (!res.ok) throw new Error(`HTTP error: ${res.status}`)
+  const response = (await res.json()) as AppResponse
+  if (!response[appId].success) {
     throw new Error(`Failed to get app data for app id ${appId}`)
   }
-  return response.data[appId].data
+  return response[appId].data
 }
 
 export async function getApps(appIds: number[]): Promise<AppData[]> {
