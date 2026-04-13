@@ -172,7 +172,8 @@ export type AppResponse = Record<number, AppResult>
 export async function getApp(appId: number): Promise<AppData> {
   const url = `https://store.steampowered.com/api/appdetails?appids=${appId}&cc=JP`
   const res = await fetch(url)
-  if (!res.ok) throw new Error(`HTTP error: ${res.status}`)
+  if (!res.ok)
+    throw new Error(`HTTP error: ${res.status} ${res.statusText} (${url})`)
   const response = (await res.json()) as AppResponse
   if (!response[appId].success) {
     throw new Error(`Failed to get app data for app id ${appId}`)

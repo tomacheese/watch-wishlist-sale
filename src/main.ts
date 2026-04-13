@@ -29,7 +29,8 @@ function getRgWishlistData(html: string): WishlistItem[] {
 async function getWishlistAppIds(profileId: string): Promise<number[]> {
   const url = `https://store.steampowered.com/wishlist/id/${profileId}/`
   const res = await fetch(url)
-  if (!res.ok) throw new Error(`HTTP error: ${res.status}`)
+  if (!res.ok)
+    throw new Error(`HTTP error: ${res.status} ${res.statusText} (${url})`)
   const data = await res.text()
   const rgWishlistData = getRgWishlistData(data)
   return rgWishlistData.map((item) => item.appid)
