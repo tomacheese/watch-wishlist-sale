@@ -1,5 +1,6 @@
 import { Logger } from '@book000/node-utils'
 import puppeteer, { LaunchOptions, Browser, Page } from 'puppeteer-core'
+import { inspect } from 'node:util'
 
 export interface History {
   /** セール番号 */
@@ -122,7 +123,12 @@ export class SteamDB {
           })
           .catch((error: unknown) => {
             emitter.removeAllListeners()
-            reject(error instanceof Error ? error : new Error(String(error)))
+            // Error 以外の値も詳細な文字列として記録し、元の値を cause で保持する
+            reject(
+              error instanceof Error
+                ? error
+                : new Error(inspect(error), { cause: error })
+            )
           })
       })
     })
