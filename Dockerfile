@@ -1,5 +1,5 @@
 # pnpm v11 は Node.js 22+ が必要なため、node:22-alpine から Node.js バイナリをコピーする
-FROM node:22-alpine AS node
+FROM node:24-alpine AS node
 
 FROM zenika/alpine-chrome:with-puppeteer-xvfb AS runner
 
