@@ -56,25 +56,13 @@
       "problemMatcher": "$msCompile"
     },
     {
-      "label": "kill (functions)",
-      "type": "shell",
-      "command": "Stop-Process -Name 'func' -Force -ErrorAction SilentlyContinue; exit 0",
-      "problemMatcher": [],
-      "presentation": {
-        "reveal": "never",
-        "close": true
-      }
-    },
-    {
-      "label": "start (functions)",
       "type": "func",
-      "dependsOn": ["kill (functions)", "build (functions)"],
-      "dependsOrder": "sequence",
+      "dependsOn": "build (functions)",
       "options": {
         "cwd": "${workspaceFolder}/bin/Debug/net10.0"
       },
       "command": "host start",
-      "args": [],
+      "args": ["--dotnet-isolated-debug", "--enable-json-output"],
       "isBackground": true,
       "problemMatcher": "$func-dotnet-watch"
     }
