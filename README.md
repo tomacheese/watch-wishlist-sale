@@ -1,43 +1,11 @@
-# WatchWishlistSale
+# TimerTrigger - C<span>#</span>
 
-Check your Steam wishlist and notify you via Discord of the price, discount rate, and the lowest price in SteamDB.
+The `TimerTrigger` makes it incredibly easy to have your functions executed on a schedule. This sample demonstrates a simple use case of calling your function every 5 minutes.
 
-## Installation
+## How it works
 
-Works in Docker (Compose) environment.
+For a `TimerTrigger` to work, you provide a schedule in the form of a [cron expression](https://en.wikipedia.org/wiki/Cron#CRON_expression)(See the link for full details). A cron expression is a string with 6 separate expressions which represent a given schedule via patterns. The pattern we use to represent every 5 minutes is `0 */5 * * * *`. This, in plain text, means: "When seconds is equal to 0, minutes is divisible by 5, for any hour, day of the month, month, day of the week, or year".
 
-### Docker
+## Learn more
 
-If you want to use Docker, write the following in `docker-compose.yml`:
-
-```yaml
-version: '3.8'
-services:
-  app:
-    image: ghcr.io/tomacheese/watch-wishlist-sale:latest
-    volumes:
-      - type: bind
-        source: ./data
-        target: /data/
-    init: true
-    restart: always
-```
-
-After that, you can start it with `docker-compose up -d` after creating a configuration file with reference to [Configuration section](#configuration).
-
-## Configuration
-
-The configuration file `data/config.json` is used by default.  
-If the environment variable `CONFIG_FILE` is set, the specified value is taken as the path to the configuration file.
-
-See here for the JSON Schema of the configuration file: [schema/Configuration.json](schema/Configuration.json)
-
-```json
-{
-  "$schema": "https://raw.githubusercontent.com/tomacheese/watch-wishlist-sale/master/schema/Configuration.json"
-}
-```
-
-## License
-
-The license for this project is [MIT License](LICENSE).
+<TODO> Documentation
