@@ -6,7 +6,8 @@ name: Build and deploy dotnet core app to Azure Function App - func-watch-wishli
 on:
   push:
     branches:
-      - feat/deploy-workflow
+      - main
+      - master
   workflow_dispatch:
 
 env:
