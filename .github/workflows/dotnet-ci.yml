@@ -16,6 +16,8 @@ jobs:
   dotnet-ci:
     name: .NET CI
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
 
