@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
@@ -119,7 +120,7 @@ public class GetLowestPrice(IHttpClientFactory httpClientFactory, IConfiguration
             CheapSharkGameInfo? info = await client.GetFromJsonAsync<CheapSharkGameInfo>(
               $"https://www.cheapshark.com/api/1.0/games?id={gameId}");
             string? priceText = info?.CheapestPriceEver?.Price;
-            if (string.IsNullOrEmpty(priceText) || !decimal.TryParse(priceText, out decimal price))
+            if (string.IsNullOrEmpty(priceText) || !decimal.TryParse(priceText, NumberStyles.Any, CultureInfo.InvariantCulture, out decimal price))
             {
                 logger.LogInformation("CheapShark does not have a price history for app id {appId}", appId);
                 return null;

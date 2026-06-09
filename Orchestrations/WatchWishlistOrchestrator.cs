@@ -59,11 +59,11 @@ public static class WatchWishlistOrchestrator
 
         string profileId = context.GetInput<string>()
             ?? throw new InvalidOperationException("Steam profile id is required as orchestrator input");
-        logger.LogInformation("Starting crawler orchestrator for profile id: {profileId}", profileId);
+        logger.LogInformation("Starting crawler orchestrator.");
 
         // 1. ウィッシュリストの App ID 一覧を取得
         List<long> appIds = await context.CallActivityAsync<List<long>>(FunctionNames.GetWishlistAppIdsActivity, profileId, ActivityRetryOptions);
-        logger.LogInformation("Got {appIdsCount} app ids for profile id: {profileId}", appIds.Count, profileId);
+        logger.LogInformation("Got {appIdsCount} app ids.", appIds.Count);
 
         // 2. 各 App ID の詳細情報を並列取得 (Fan-out)
         // 全件を一度に Fan-out すると外部 API のレート制限に抵触しかねないため、

@@ -20,7 +20,7 @@ public class GetWishlistAppIds(IHttpClientFactory httpClientFactory, ILogger<Get
     [Function(FunctionNames.GetWishlistAppIdsActivity)]
     public async Task<List<long>> GetWishlistAppIdsActivity([ActivityTrigger] string profileId)
     {
-        logger.LogInformation("Getting wishlist app ids for profile id: {profileId}", profileId);
+        logger.LogInformation("Getting wishlist app ids.");
 
         string url = $"https://api.steampowered.com/IWishlistService/GetWishlist/v1/?steamid={profileId}";
         HttpClient client = httpClientFactory.CreateClient(nameof(GetWishlistAppIds));
@@ -28,11 +28,11 @@ public class GetWishlistAppIds(IHttpClientFactory httpClientFactory, ILogger<Get
         List<WishlistItem>? items = result?.Response?.Items;
         if (items is null)
         {
-            throw new InvalidOperationException($"Failed to get wishlist items for profile id {profileId} ({url})");
+            throw new InvalidOperationException("Failed to get wishlist items.");
         }
 
         List<long> appIds = items.Select(item => item.AppId).ToList();
-        logger.LogInformation("Got {appIdsCount} app ids for profile id: {profileId}", appIds.Count, profileId);
+        logger.LogInformation("Got {appIdsCount} app ids.", appIds.Count);
         return appIds;
     }
 }

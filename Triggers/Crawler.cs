@@ -32,8 +32,7 @@ public class Crawler(IConfiguration configuration, ILogger<Crawler> logger)
         if (existingInstance is { RuntimeStatus: OrchestrationRuntimeStatus.Running or OrchestrationRuntimeStatus.Pending })
         {
             logger.LogInformation(
-                "Orchestration instance {instanceId} is already running (status: {status}). Skipping this run.",
-                instanceId,
+                "Orchestration is already running (status: {status}). Skipping this run.",
                 existingInstance.RuntimeStatus);
             return;
         }
@@ -42,6 +41,6 @@ public class Crawler(IConfiguration configuration, ILogger<Crawler> logger)
             FunctionNames.CrawlerOrchestrator,
             profileId,
             new StartOrchestrationOptions(InstanceId: instanceId));
-        logger.LogInformation("Started orchestration with ID = {instanceId} for profile id: {profileId}", instanceId, profileId);
+        logger.LogInformation("Started orchestration for wishlist monitoring.");
     }
 }
