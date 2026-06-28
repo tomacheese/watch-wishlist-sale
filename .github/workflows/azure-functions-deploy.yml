@@ -18,6 +18,7 @@ jobs:
   build-and-deploy:
     name: Build and Deploy
     runs-on: ubuntu-latest
+    environment: production
     permissions:
       id-token: write # OIDC 認証に必要
       contents: read
