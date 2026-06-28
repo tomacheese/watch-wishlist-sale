@@ -3,11 +3,15 @@
 name: Deploy to Azure Functions
 
 on:
-  push:
-    branches:
-      - main
-      - master
+  workflow_run:
+    workflows: [".NET CI"]
+    types: [completed]
+    branches: [main, master]
   workflow_dispatch:
+
+concurrency:
+  group: azure-deploy
+  cancel-in-progress: true
 
 env:
   DOTNET_VERSION: "10.0.x"
@@ -16,18 +20,21 @@ jobs:
   build-and-deploy:
     name: ビルドとデプロイ
     runs-on: ubuntu-latest
+    # workflow_dispatch は常に実行、workflow_run は CI 成功時のみ実行
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     permissions:
       id-token: write # OIDC 認証に必要
       contents: read
 
     steps:
-      - name: リポジトリをチェックアウト
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: .NET ${{ env.DOTNET_VERSION }} セットアップ
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
+          cache: true
+          cache-dependency-path: "**/*.csproj"
 
       - name: プロジェクトをパブリッシュ
         run: dotnet publish --configuration Release --output ./output
@@ -44,3 +51,4 @@ jobs:
         with:
           app-name: ${{ secrets.AZURE_FUNCTIONAPP_NAME }}
           package: ./output
+          scm-do-build-during-deployment: false
