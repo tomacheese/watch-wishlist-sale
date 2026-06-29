@@ -67,7 +67,6 @@ public static class WatchWishlistOrchestrator
             ?? throw new InvalidOperationException("Steam profile id is required as orchestrator input");
         logger.LogInformation("Starting crawler orchestrator.");
 
-        // 1. ウィッシュリストの App ID 一覧を取得
         List<long> appIds = await context.CallActivityAsync<List<long>>(FunctionNames.GetWishlistAppIdsActivity, profileId, ActivityRetryOptions);
         logger.LogInformation("Got {appIdsCount} app ids.", appIds.Count);
 
@@ -96,7 +95,6 @@ public static class WatchWishlistOrchestrator
             appDetailsList.Count,
             appDetailsResults.Count - appDetailsList.Count);
 
-        // 3. 販売中 & 割引中のアプリを抽出
         List<AppDetails> saleApps = await context.CallActivityAsync<List<AppDetails>>(FunctionNames.FilterSaleAppsActivity, appDetailsList);
         logger.LogInformation("Got {saleAppsCount} sale apps", saleApps.Count);
 
@@ -141,7 +139,6 @@ public static class WatchWishlistOrchestrator
             await context.CallActivityAsync(FunctionNames.SendDiscordNotificationActivity, notifications, ActivityRetryOptions);
         }
 
-        // 8. 通知状態を更新 (新規・価格変更分を記録)
         foreach (AppDetails app in targetApps)
         {
             var currentPrice = app.PriceOverview!.Final / 100m;

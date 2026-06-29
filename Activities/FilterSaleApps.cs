@@ -22,7 +22,6 @@ public class FilterSaleApps(ILogger<FilterSaleApps> logger)
     {
         logger.LogInformation("Filtering sale apps from {appDetailsCount} app details", appDetails.Count);
 
-        // 販売中 & 割引中のアプリ
         List<AppDetails> saleApps = [.. appDetails.Where(app =>
         {
             if (app.PriceOverview is null)
@@ -31,7 +30,6 @@ public class FilterSaleApps(ILogger<FilterSaleApps> logger)
                 return false;
             }
 
-            // 割引率が 0 => 割引なし
             return app.PriceOverview.DiscountPercent != 0;
         })];
 
