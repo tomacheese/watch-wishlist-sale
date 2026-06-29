@@ -3,16 +3,16 @@ namespace WatchWishlistSale.Models.Notification;
 /// <summary>
 /// 通知済みのアプリ ID と、その時点の通知価格 (円) の組
 /// </summary>
-/// <param name="AppId">Steam アプリ ID</param>
-/// <param name="Price">通知時点の価格 (円)</param>
-public record NotifiedEntry(long AppId, decimal Price);
+/// <param name="appId">Steam アプリ ID</param>
+/// <param name="price">通知時点の価格 (円)</param>
+public record NotifiedEntry(long appId, decimal price);
 
 /// <summary>
 /// NotificationStateEntity の状態スナップショット
 /// </summary>
-/// <param name="IsFirstRun">エンティティが今回が初回呼び出しであるかどうか</param>
-/// <param name="NotifiedPrices">アプリ ID と、最後に通知した価格 (円) のマップ</param>
-public record NotificationSnapshot(bool IsFirstRun, Dictionary<long, decimal> NotifiedPrices);
+/// <param name="isFirstRun">エンティティが今回が初回呼び出しであるかどうか</param>
+/// <param name="notifiedPrices">アプリ ID と、最後に通知した価格 (円) のマップ</param>
+public record NotificationSnapshot(bool isFirstRun, Dictionary<long, decimal> notifiedPrices);
 
 /// <summary>
 /// NotificationStateEntity が保持する内部状態

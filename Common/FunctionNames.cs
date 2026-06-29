@@ -3,7 +3,7 @@ namespace WatchWishlistSale.Common;
 /// <summary>
 /// Durable Functions の各種 Function 名を定義する定数クラス
 /// </summary>
-public class FunctionNames
+public static class FunctionNames
 {
     public const string RunCrawler = "RunCrawler";
     public const string CrawlerOrchestrator = "CrawlerOrchestrator";

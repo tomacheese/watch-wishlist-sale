@@ -57,7 +57,7 @@ public static class WatchWishlistOrchestrator
     {
         ILogger logger = context.CreateReplaySafeLogger(nameof(WatchWishlistOrchestrator));
 
-        string profileId = context.GetInput<string>()
+        var profileId = context.GetInput<string>()
             ?? throw new InvalidOperationException("Steam profile id is required as orchestrator input");
         logger.LogInformation("Starting crawler orchestrator.");
 
@@ -71,19 +71,20 @@ public static class WatchWishlistOrchestrator
         // 待機を挟みながら Fan-out/Fan-in することで、実効的なリクエストレートを制限値未満に抑える
         List<AppDetails?> appDetailsResults = [];
         long[][] appIdChunks = [.. appIds.Chunk(MaxFanOutConcurrency)];
-        for (int chunkIndex = 0; chunkIndex < appIdChunks.Length; chunkIndex++)
+        for (var chunkIndex = 0; chunkIndex < appIdChunks.Length; chunkIndex++)
         {
             IEnumerable<Task<AppDetails?>> appDetailsTasks = appIdChunks[chunkIndex].Select(appId =>
                 context.CallActivityAsync<AppDetails?>(FunctionNames.GetAppDetailsActivity, appId, ActivityRetryOptions));
             appDetailsResults.AddRange(await Task.WhenAll(appDetailsTasks));
 
-            bool isLastChunk = chunkIndex == appIdChunks.Length - 1;
+            var isLastChunk = chunkIndex == appIdChunks.Length - 1;
             if (!isLastChunk)
             {
                 await context.CreateTimer(context.CurrentUtcDateTime.Add(AppDetailsFanOutInterval), CancellationToken.None);
             }
         }
-        List<AppDetails> appDetailsList = appDetailsResults.OfType<AppDetails>().ToList();
+
+        List<AppDetails> appDetailsList = [.. appDetailsResults.OfType<AppDetails>()];
         logger.LogInformation(
             "Got {appDetailsCount} app details ({failedCount} failed)",
             appDetailsList.Count,
@@ -98,36 +99,34 @@ public static class WatchWishlistOrchestrator
         NotificationSnapshot snapshot = await context.Entities.CallEntityAsync<NotificationSnapshot>(entityId, NotificationStateEntity.OperationGetSnapshot);
 
         // 5. 「前回通知時から価格が変わった」または「新たにセール対象になった」アプリのみを抽出
-        List<AppDetails> targetApps = saleApps.Where(app =>
+        List<AppDetails> targetApps = [.. saleApps.Where(app =>
         {
-            decimal currentPrice = app.PriceOverview!.Final / 100m;
-            return !snapshot.NotifiedPrices.TryGetValue(app.SteamAppId, out decimal notifiedPrice) || notifiedPrice != currentPrice;
-        }).ToList();
+            var currentPrice = app.PriceOverview!.Final / 100m;
+            return !snapshot.notifiedPrices.TryGetValue(app.SteamAppId, out var notifiedPrice) || notifiedPrice != currentPrice;
+        })];
         logger.LogInformation("Got {targetAppsCount} apps to notify", targetApps.Count);
 
         // 6. 通知対象アプリの過去最安値を並列取得 (Fan-out)
         // こちらも同様に、チャンクに分けて LowestPriceFanOutInterval だけ待機を挟みながら Fan-out/Fan-in する
         List<LowestPriceResult?> lowestPrices = [];
         AppDetails[][] targetAppChunks = [.. targetApps.Chunk(MaxFanOutConcurrency)];
-        for (int chunkIndex = 0; chunkIndex < targetAppChunks.Length; chunkIndex++)
+        for (var chunkIndex = 0; chunkIndex < targetAppChunks.Length; chunkIndex++)
         {
             IEnumerable<Task<LowestPriceResult?>> lowestPriceTasks = targetAppChunks[chunkIndex].Select(app =>
                 context.CallActivityAsync<LowestPriceResult?>(FunctionNames.GetLowestPriceActivity, app.SteamAppId, ActivityRetryOptions));
             lowestPrices.AddRange(await Task.WhenAll(lowestPriceTasks));
 
-            bool isLastChunk = chunkIndex == targetAppChunks.Length - 1;
+            var isLastChunk = chunkIndex == targetAppChunks.Length - 1;
             if (!isLastChunk)
             {
                 await context.CreateTimer(context.CurrentUtcDateTime.Add(LowestPriceFanOutInterval), CancellationToken.None);
             }
         }
 
-        List<SaleNotification> notifications = targetApps
-            .Select((app, index) => new SaleNotification(app, lowestPrices[index]))
-            .ToList();
+        List<SaleNotification> notifications = [.. targetApps.Select((app, index) => new SaleNotification(app, lowestPrices[index]))];
 
         // 7. 初回実行時はウィッシュリスト全体が通知対象になってしまうため、Discord への送信は行わず状態の記録のみ行う
-        if (snapshot.IsFirstRun)
+        if (snapshot.isFirstRun)
         {
             logger.LogInformation("First run detected. Recording state without sending Discord notification for {count} apps", notifications.Count);
         }
@@ -139,17 +138,18 @@ public static class WatchWishlistOrchestrator
         // 8. 通知状態を更新 (新規・価格変更分を記録)
         foreach (AppDetails app in targetApps)
         {
-            decimal currentPrice = app.PriceOverview!.Final / 100m;
+            var currentPrice = app.PriceOverview!.Final / 100m;
             await context.Entities.CallEntityAsync(entityId, NotificationStateEntity.OperationSetNotified, new NotifiedEntry(app.SteamAppId, currentPrice));
         }
 
         // 9. セールが終了し対象から外れたアプリの通知記録を削除
-        foreach (long notifiedAppId in snapshot.NotifiedPrices.Keys)
+        foreach (var notifiedAppId in snapshot.notifiedPrices.Keys)
         {
             if (saleApps.Any(app => app.SteamAppId == notifiedAppId))
             {
                 continue;
             }
+
             logger.LogInformation("❌ Removing notification record for app id: {appId}", notifiedAppId);
             await context.Entities.CallEntityAsync(entityId, NotificationStateEntity.OperationRemoveNotified, notifiedAppId);
         }

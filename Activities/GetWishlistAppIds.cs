@@ -22,16 +22,11 @@ public class GetWishlistAppIds(IHttpClientFactory httpClientFactory, ILogger<Get
     {
         logger.LogInformation("Getting wishlist app ids.");
 
-        string url = $"https://api.steampowered.com/IWishlistService/GetWishlist/v1/?steamid={profileId}";
+        var url = $"https://api.steampowered.com/IWishlistService/GetWishlist/v1/?steamid={profileId}";
         HttpClient client = httpClientFactory.CreateClient(nameof(GetWishlistAppIds));
         WishlistApiResponse? result = await client.GetFromJsonAsync<WishlistApiResponse>(url);
-        List<WishlistItem>? items = result?.Response?.Items;
-        if (items is null)
-        {
-            throw new InvalidOperationException("Failed to get wishlist items.");
-        }
-
-        List<long> appIds = items.Select(item => item.AppId).ToList();
+        List<WishlistItem>? items = result?.Response?.Items ?? throw new InvalidOperationException("Failed to get wishlist items.");
+        List<long> appIds = [.. items.Select(item => item.AppId)];
         logger.LogInformation("Got {appIdsCount} app ids.", appIds.Count);
         return appIds;
     }

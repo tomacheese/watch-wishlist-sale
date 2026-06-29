@@ -16,7 +16,7 @@ public class GetAppDetails(IHttpClientFactory httpClientFactory, ILogger<GetAppD
     {
         logger.LogInformation("Getting app details for app id: {appId}", appId);
 
-        string url = $"https://store.steampowered.com/api/appdetails?appids={appId}&cc=JP";
+        var url = $"https://store.steampowered.com/api/appdetails?appids={appId}&cc=JP";
         HttpClient client = httpClientFactory.CreateClient(nameof(GetAppDetails));
         using HttpResponseMessage response = await client.GetAsync(url);
         if (!response.IsSuccessStatusCode)

@@ -23,11 +23,11 @@ public class Crawler(IConfiguration configuration, ILogger<Crawler> logger)
             logger.LogInformation("Next timer schedule at: {nextSchedule}", myTimer.ScheduleStatus.Next);
         }
 
-        string profileId = configuration["STEAM_PROFILE_ID"]
+        var profileId = configuration["STEAM_PROFILE_ID"]
             ?? throw new InvalidOperationException("STEAM_PROFILE_ID is not configured");
 
         // プロフィール ID ごとにインスタンス ID を固定し、同一プロフィールに対するオーケストレーターの多重起動を防ぐ (シングルトンパターン)
-        string instanceId = $"{FunctionNames.CrawlerOrchestrator}-{profileId}";
+        var instanceId = $"{FunctionNames.CrawlerOrchestrator}-{profileId}";
         OrchestrationMetadata? existingInstance = await client.GetInstanceAsync(instanceId);
         if (existingInstance is { RuntimeStatus: OrchestrationRuntimeStatus.Running or OrchestrationRuntimeStatus.Pending })
         {

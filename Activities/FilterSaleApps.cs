@@ -18,16 +18,17 @@ public class FilterSaleApps(ILogger<FilterSaleApps> logger)
         logger.LogInformation("Filtering sale apps from {appDetailsCount} app details", appDetails.Count);
 
         // 販売中 & 割引中のアプリ
-        List<AppDetails> saleApps = appDetails.Where(app =>
+        List<AppDetails> saleApps = [.. appDetails.Where(app =>
         {
             if (app.PriceOverview is null)
             {
                 // 価格情報がない => 未発売 or 販売終了
                 return false;
             }
+
             // 割引率が 0 => 割引なし
             return app.PriceOverview.DiscountPercent != 0;
-        }).ToList();
+        })];
 
         logger.LogInformation("Found {saleAppsCount} sale apps", saleApps.Count);
         return saleApps;

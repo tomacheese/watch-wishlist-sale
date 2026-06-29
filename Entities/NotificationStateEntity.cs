@@ -28,33 +28,28 @@ public class NotificationStateEntity : TaskEntity<NotificationState>
     /// <returns>通知状態のスナップショット</returns>
     public Task<NotificationSnapshot> GetSnapshot()
     {
-        bool isFirstRun = !this.State.Initialized;
-        this.State.Initialized = true;
-        return Task.FromResult(new NotificationSnapshot(isFirstRun, new Dictionary<long, decimal>(this.State.NotifiedPrices)));
+        var isFirstRun = !State.Initialized;
+        State.Initialized = true;
+        return Task.FromResult(new NotificationSnapshot(isFirstRun, new Dictionary<long, decimal>(State.NotifiedPrices)));
     }
 
     /// <summary>
     /// 指定したアプリを、指定した価格で通知済みとして記録する
     /// </summary>
     /// <param name="entry">通知済みエントリ (アプリ ID と価格)</param>
-    public void SetNotified(NotifiedEntry entry)
-    {
-        this.State.NotifiedPrices[entry.AppId] = entry.Price;
-    }
+    public void SetNotified(NotifiedEntry entry) => State.NotifiedPrices[entry.appId] = entry.price;
 
     /// <summary>
     /// 指定したアプリの通知済み記録を削除する (セールが終了し対象から外れた場合に利用)
     /// </summary>
     /// <param name="appId">Steam アプリ ID</param>
-    public void RemoveNotified(long appId)
-    {
-        this.State.NotifiedPrices.Remove(appId);
-    }
+    public void RemoveNotified(long appId) => State.NotifiedPrices.Remove(appId);
 
     /// <summary>
     /// エンティティの状態が未生成の場合の初期値を返す
     /// </summary>
-    protected override NotificationState InitializeState(TaskEntityOperation operation) => new();
+    /// <returns></returns>
+    protected override NotificationState InitializeState(TaskEntityOperation entityOperation) => new();
 
     [Function(FunctionNames.NotificationStateEntity)]
     public static Task DispatchAsync([EntityTrigger] TaskEntityDispatcher dispatcher)

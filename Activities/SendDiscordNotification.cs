@@ -29,7 +29,7 @@ public class SendDiscordNotification(IHttpClientFactory httpClientFactory, IConf
             return;
         }
 
-        string? webhookUrl = configuration["DISCORD_WEBHOOK_URL"];
+        var webhookUrl = configuration["DISCORD_WEBHOOK_URL"];
         if (string.IsNullOrEmpty(webhookUrl))
         {
             logger.LogWarning("⚠️ DISCORD_WEBHOOK_URL is not configured. Skipping Discord notification.");
@@ -44,7 +44,7 @@ public class SendDiscordNotification(IHttpClientFactory httpClientFactory, IConf
             DiscordEmbed embed = new()
             {
                 Title = "Steam Sale Alert",
-                Fields = chunk.Select(BuildField).ToList(),
+                Fields = [.. chunk.Select(BuildField)],
                 Timestamp = DateTimeOffset.UtcNow.ToString("o"),
                 Color = EmbedColor,
             };
@@ -54,7 +54,7 @@ public class SendDiscordNotification(IHttpClientFactory httpClientFactory, IConf
             using HttpResponseMessage response = await client.PostAsync(webhookUrl, content);
             if (!response.IsSuccessStatusCode)
             {
-                string body = await response.Content.ReadAsStringAsync();
+                var body = await response.Content.ReadAsStringAsync();
                 throw new InvalidOperationException($"Failed to send Discord notification: {(int)response.StatusCode} {response.ReasonPhrase} ({body})");
             }
 
@@ -65,16 +65,16 @@ public class SendDiscordNotification(IHttpClientFactory httpClientFactory, IConf
     /// <summary>1 アプリ分の通知情報から Discord embed のフィールドを組み立てる</summary>
     private static DiscordEmbedField BuildField(SaleNotification notification)
     {
-        AppDetails app = notification.App;
+        AppDetails app = notification.app;
         PriceOverview price = app.PriceOverview!;
-        decimal initialPrice = price.Initial / 100m;
-        decimal currentPrice = price.Final / 100m;
-        string lowestPriceText = notification.LowestPrice is { } lowest
-          ? $"{lowest.Price}{lowest.Currency}"
+        var initialPrice = price.Initial / 100m;
+        var currentPrice = price.Final / 100m;
+        var lowestPriceText = notification.lowestPrice is { } lowest
+          ? $"{lowest.price}{lowest.currency}"
           : "不明";
 
-        string urlSteamDb = $"https://steamdb.info/app/{app.SteamAppId}/";
-        string urlSteam = $"https://store.steampowered.com/app/{app.SteamAppId}/";
+        var urlSteamDb = $"https://steamdb.info/app/{app.SteamAppId}/";
+        var urlSteam = $"https://store.steampowered.com/app/{app.SteamAppId}/";
 
         return new DiscordEmbedField
         {
