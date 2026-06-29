@@ -19,7 +19,7 @@ public class WishlistResponseBody
 {
     /// <summary>ウィッシュリストに登録されているアイテム一覧</summary>
     [JsonPropertyName("items")]
-    public List<WishlistItem> Items { get; set; } = [];
+    public IList<WishlistItem> Items { get; } = [];
 }
 
 /// <summary>

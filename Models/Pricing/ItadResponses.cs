@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 namespace WatchWishlistSale.Models.Pricing;
 
 /// <summary>games/lookup/v1 のレスポンス</summary>
-internal class ItadLookupResponse
+public class ItadLookupResponse
 {
     /// <summary>指定した Steam アプリ ID に対応するゲームが ITAD に存在するかどうか</summary>
     [JsonPropertyName("found")]
@@ -15,7 +15,7 @@ internal class ItadLookupResponse
 }
 
 /// <summary>ITAD のゲーム識別情報</summary>
-internal class ItadGame
+public class ItadGame
 {
     /// <summary>ITAD 内部のゲーム ID</summary>
     [JsonPropertyName("id")]
@@ -23,7 +23,7 @@ internal class ItadGame
 }
 
 /// <summary>games/storelow/v2 のレスポンス要素 (ゲーム 1 件分の過去最安値一覧)</summary>
-internal class ItadStoreLowEntry
+public class ItadStoreLowEntry
 {
     /// <summary>ITAD 内部のゲーム ID</summary>
     [JsonPropertyName("id")]
@@ -31,11 +31,11 @@ internal class ItadStoreLowEntry
 
     /// <summary>ショップごとの過去最安値一覧</summary>
     [JsonPropertyName("lows")]
-    public List<ItadLow> Lows { get; set; } = [];
+    public IList<ItadLow> Lows { get; } = [];
 }
 
 /// <summary>特定ショップにおける過去最安値エントリ</summary>
-internal class ItadLow
+public class ItadLow
 {
     /// <summary>ショップの識別情報</summary>
     [JsonPropertyName("shop")]
@@ -47,7 +47,7 @@ internal class ItadLow
 }
 
 /// <summary>ITAD のショップ識別情報</summary>
-internal class ItadShop
+public class ItadShop
 {
     /// <summary>ITAD 内部のショップ ID</summary>
     [JsonPropertyName("id")]
@@ -55,7 +55,7 @@ internal class ItadShop
 }
 
 /// <summary>ITAD の価格情報 (金額と通貨コード)</summary>
-internal class ItadPrice
+public class ItadPrice
 {
     /// <summary>金額</summary>
     [JsonPropertyName("amount")]

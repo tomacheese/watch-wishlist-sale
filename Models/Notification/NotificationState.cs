@@ -26,5 +26,5 @@ public class NotificationState
     public bool Initialized { get; set; }
 
     /// <summary>アプリ ID と、最後に通知した価格 (円) のマップ (旧実装の notified.json に相当)</summary>
-    public Dictionary<long, decimal> NotifiedPrices { get; set; } = [];
+    public Dictionary<long, decimal> NotifiedPrices { get; } = [];
 }
