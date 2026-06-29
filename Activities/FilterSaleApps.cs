@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using WatchWishlistSale.Common;
@@ -12,24 +13,30 @@ namespace WatchWishlistSale.Activities;
 /// </summary>
 public class FilterSaleApps(ILogger<FilterSaleApps> logger)
 {
+    /// <summary>
+    /// アクティビティのエントリーポイント。アプリ詳細一覧からセール中のアプリだけを抽出して返す。
+    /// </summary>
+    /// <param name="appDetails">アプリ詳細情報の一覧</param>
+    /// <returns>現在割引中のアプリ詳細情報の一覧</returns>
     [Function(FunctionNames.FilterSaleAppsActivity)]
+    [SuppressMessage("Design", "CA1002", Justification = "Durable Functions Activity の入出力は List<T> を直接 JSON シリアライズするため変更不可。")]
     public List<AppDetails> FilterSaleAppsActivity([ActivityTrigger] List<AppDetails> appDetails)
     {
-        logger.LogInformation("Filtering sale apps from {appDetailsCount} app details", appDetails.Count);
+        ArgumentNullException.ThrowIfNull(appDetails);
+        logger.LogInformation("Filtering sale apps from {AppDetailsCount} app details", appDetails.Count);
 
-        // 販売中 & 割引中のアプリ
-        List<AppDetails> saleApps = appDetails.Where(app =>
+        List<AppDetails> saleApps = [.. appDetails.Where(app =>
         {
             if (app.PriceOverview is null)
             {
                 // 価格情報がない => 未発売 or 販売終了
                 return false;
             }
-            // 割引率が 0 => 割引なし
-            return app.PriceOverview.DiscountPercent != 0;
-        }).ToList();
 
-        logger.LogInformation("Found {saleAppsCount} sale apps", saleApps.Count);
+            return app.PriceOverview.DiscountPercent != 0;
+        })];
+
+        logger.LogInformation("Found {SaleAppsCount} sale apps", saleApps.Count);
         return saleApps;
     }
 }

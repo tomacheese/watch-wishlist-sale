@@ -12,27 +12,36 @@ namespace WatchWishlistSale.Triggers;
 /// </summary>
 public class Crawler(IConfiguration configuration, ILogger<Crawler> logger)
 {
+    /// <summary>
+    /// タイマートリガーのエントリーポイント。毎時 0 分に起動し、WatchWishlistOrchestrator を開始する。
+    /// 同一プロフィールに対するオーケストレーターの多重起動を防ぐためシングルトンパターンを使用する。
+    /// </summary>
+    /// <param name="myTimer">タイマートリガーの情報 (スケジュール状態を含む)</param>
+    /// <param name="client">Durable Functions のクライアント。オーケストレーター起動に使用する</param>
+    /// <returns>処理完了を表す非同期タスク</returns>
     [Function(FunctionNames.RunCrawler)]
     public async Task RunCrawler(
         [TimerTrigger("0 0 * * * *")] TimerInfo myTimer,
         [DurableClient] DurableTaskClient client)
     {
-        logger.LogInformation("Timer trigger function executed at: {executionTime}", DateTime.Now);
+        ArgumentNullException.ThrowIfNull(myTimer);
+        ArgumentNullException.ThrowIfNull(client);
+        logger.LogInformation("Timer trigger function executed at: {ExecutionTime}", DateTime.Now);
         if (myTimer.ScheduleStatus is not null)
         {
-            logger.LogInformation("Next timer schedule at: {nextSchedule}", myTimer.ScheduleStatus.Next);
+            logger.LogInformation("Next timer schedule at: {NextSchedule}", myTimer.ScheduleStatus.Next);
         }
 
-        string profileId = configuration["STEAM_PROFILE_ID"]
+        var profileId = configuration["STEAM_PROFILE_ID"]
             ?? throw new InvalidOperationException("STEAM_PROFILE_ID is not configured");
 
         // プロフィール ID ごとにインスタンス ID を固定し、同一プロフィールに対するオーケストレーターの多重起動を防ぐ (シングルトンパターン)
-        string instanceId = $"{FunctionNames.CrawlerOrchestrator}-{profileId}";
+        var instanceId = $"{FunctionNames.CrawlerOrchestrator}-{profileId}";
         OrchestrationMetadata? existingInstance = await client.GetInstanceAsync(instanceId);
         if (existingInstance is { RuntimeStatus: OrchestrationRuntimeStatus.Running or OrchestrationRuntimeStatus.Pending })
         {
             logger.LogInformation(
-                "Orchestration is already running (status: {status}). Skipping this run.",
+                "Orchestration is already running (status: {Status}). Skipping this run.",
                 existingInstance.RuntimeStatus);
             return;
         }

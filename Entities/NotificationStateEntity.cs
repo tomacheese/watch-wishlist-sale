@@ -28,9 +28,9 @@ public class NotificationStateEntity : TaskEntity<NotificationState>
     /// <returns>通知状態のスナップショット</returns>
     public Task<NotificationSnapshot> GetSnapshot()
     {
-        bool isFirstRun = !this.State.Initialized;
-        this.State.Initialized = true;
-        return Task.FromResult(new NotificationSnapshot(isFirstRun, new Dictionary<long, decimal>(this.State.NotifiedPrices)));
+        var isFirstRun = !State.Initialized;
+        State.Initialized = true;
+        return Task.FromResult(new NotificationSnapshot(isFirstRun, new Dictionary<long, decimal>(State.NotifiedPrices)));
     }
 
     /// <summary>
@@ -39,24 +39,32 @@ public class NotificationStateEntity : TaskEntity<NotificationState>
     /// <param name="entry">通知済みエントリ (アプリ ID と価格)</param>
     public void SetNotified(NotifiedEntry entry)
     {
-        this.State.NotifiedPrices[entry.AppId] = entry.Price;
+        ArgumentNullException.ThrowIfNull(entry);
+        State.NotifiedPrices[entry.appId] = entry.price;
     }
 
     /// <summary>
     /// 指定したアプリの通知済み記録を削除する (セールが終了し対象から外れた場合に利用)
     /// </summary>
     /// <param name="appId">Steam アプリ ID</param>
-    public void RemoveNotified(long appId)
-    {
-        this.State.NotifiedPrices.Remove(appId);
-    }
+    public void RemoveNotified(long appId) => State.NotifiedPrices.Remove(appId);
 
     /// <summary>
     /// エンティティの状態が未生成の場合の初期値を返す
     /// </summary>
-    protected override NotificationState InitializeState(TaskEntityOperation operation) => new();
+    /// <param name="entityOperation">エンティティに対して実行される操作の情報</param>
+    /// <returns>初期状態の <see cref="NotificationState"/></returns>
+    protected override NotificationState InitializeState(TaskEntityOperation entityOperation) => new();
 
+    /// <summary>
+    /// Durable Entity のエントリーポイント。受信した操作をエンティティクラスにディスパッチする。
+    /// </summary>
+    /// <param name="dispatcher">エンティティへの操作をディスパッチするオブジェクト</param>
+    /// <returns>ディスパッチ完了を表す <see cref="Task"/></returns>
     [Function(FunctionNames.NotificationStateEntity)]
     public static Task DispatchAsync([EntityTrigger] TaskEntityDispatcher dispatcher)
-      => dispatcher.DispatchAsync<NotificationStateEntity>();
+    {
+        ArgumentNullException.ThrowIfNull(dispatcher);
+        return dispatcher.DispatchAsync<NotificationStateEntity>();
+    }
 }
