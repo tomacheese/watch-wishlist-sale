@@ -28,6 +28,7 @@ public class SendDiscordNotification(IHttpClientFactory httpClientFactory, IConf
     [Function(FunctionNames.SendDiscordNotificationActivity)]
     public async Task SendDiscordNotificationActivity([ActivityTrigger] List<SaleNotification> notifications)
     {
+        ArgumentNullException.ThrowIfNull(notifications);
         if (notifications.Count == 0)
         {
             logger.LogInformation("No sale notifications to send");
@@ -56,14 +57,14 @@ public class SendDiscordNotification(IHttpClientFactory httpClientFactory, IConf
             DiscordWebhookPayload payload = new() { Embeds = [embed] };
 
             using StringContent content = new(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
-            using HttpResponseMessage response = await client.PostAsync(webhookUrl, content);
+            using HttpResponseMessage response = await client.PostAsync(new Uri(webhookUrl), content);
             if (!response.IsSuccessStatusCode)
             {
                 var body = await response.Content.ReadAsStringAsync();
                 throw new InvalidOperationException($"Failed to send Discord notification: {(int)response.StatusCode} {response.ReasonPhrase} ({body})");
             }
 
-            logger.LogInformation("🔔 Sent Discord notification for {count} apps", chunk.Length);
+            logger.LogInformation("🔔 Sent Discord notification for {Count} apps", chunk.Length);
         }
     }
 

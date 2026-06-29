@@ -37,7 +37,11 @@ public class NotificationStateEntity : TaskEntity<NotificationState>
     /// 指定したアプリを、指定した価格で通知済みとして記録する
     /// </summary>
     /// <param name="entry">通知済みエントリ (アプリ ID と価格)</param>
-    public void SetNotified(NotifiedEntry entry) => State.NotifiedPrices[entry.appId] = entry.price;
+    public void SetNotified(NotifiedEntry entry)
+    {
+        ArgumentNullException.ThrowIfNull(entry);
+        State.NotifiedPrices[entry.appId] = entry.price;
+    }
 
     /// <summary>
     /// 指定したアプリの通知済み記録を削除する (セールが終了し対象から外れた場合に利用)
@@ -59,5 +63,8 @@ public class NotificationStateEntity : TaskEntity<NotificationState>
     /// <returns>ディスパッチ完了を表す <see cref="Task"/></returns>
     [Function(FunctionNames.NotificationStateEntity)]
     public static Task DispatchAsync([EntityTrigger] TaskEntityDispatcher dispatcher)
-      => dispatcher.DispatchAsync<NotificationStateEntity>();
+    {
+        ArgumentNullException.ThrowIfNull(dispatcher);
+        return dispatcher.DispatchAsync<NotificationStateEntity>();
+    }
 }

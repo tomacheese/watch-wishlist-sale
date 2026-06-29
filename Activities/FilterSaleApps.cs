@@ -20,7 +20,8 @@ public class FilterSaleApps(ILogger<FilterSaleApps> logger)
     [Function(FunctionNames.FilterSaleAppsActivity)]
     public List<AppDetails> FilterSaleAppsActivity([ActivityTrigger] List<AppDetails> appDetails)
     {
-        logger.LogInformation("Filtering sale apps from {appDetailsCount} app details", appDetails.Count);
+        ArgumentNullException.ThrowIfNull(appDetails);
+        logger.LogInformation("Filtering sale apps from {AppDetailsCount} app details", appDetails.Count);
 
         List<AppDetails> saleApps = [.. appDetails.Where(app =>
         {
@@ -33,7 +34,7 @@ public class FilterSaleApps(ILogger<FilterSaleApps> logger)
             return app.PriceOverview.DiscountPercent != 0;
         })];
 
-        logger.LogInformation("Found {saleAppsCount} sale apps", saleApps.Count);
+        logger.LogInformation("Found {SaleAppsCount} sale apps", saleApps.Count);
         return saleApps;
     }
 }

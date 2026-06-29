@@ -37,13 +37,13 @@ public class GetLowestPrice(IHttpClientFactory httpClientFactory, IConfiguration
     [Function(FunctionNames.GetLowestPriceActivity)]
     public async Task<LowestPriceResult?> GetLowestPriceActivity([ActivityTrigger] long appId)
     {
-        logger.LogInformation("Getting lowest price for app id: {appId}", appId);
+        logger.LogInformation("Getting lowest price for app id: {AppId}", appId);
 
         LowestPriceResult? result = await GetFromItadAsync(appId)
           ?? await GetFromCheapSharkAsync(appId);
         if (result is null)
         {
-            logger.LogWarning("⚠️ Failed to get lowest price for app id {appId}", appId);
+            logger.LogWarning("⚠️ Failed to get lowest price for app id {AppId}", appId);
         }
 
         return result;
@@ -57,7 +57,7 @@ public class GetLowestPrice(IHttpClientFactory httpClientFactory, IConfiguration
         var apiKey = configuration["ITAD_API_KEY"];
         if (string.IsNullOrEmpty(apiKey))
         {
-            logger.LogWarning("⚠️ ITAD_API_KEY is not configured. Skipping ITAD lookup for app id {appId}", appId);
+            logger.LogWarning("⚠️ ITAD_API_KEY is not configured. Skipping ITAD lookup for app id {AppId}", appId);
             return null;
         }
 
@@ -70,17 +70,17 @@ public class GetLowestPrice(IHttpClientFactory httpClientFactory, IConfiguration
             ItadLookupResponse? lookup = await client.GetFromJsonAsync<ItadLookupResponse>(lookupUrl);
             if (lookup is not { Found: true, Game: not null })
             {
-                logger.LogInformation("ITAD does not have a game entry for app id {appId}", appId);
+                logger.LogInformation("ITAD does not have a game entry for app id {AppId}", appId);
                 return null;
             }
 
             // ITAD のゲーム ID から Steam ショップでの過去最安値 (日本円) を取得する
             var storeLowUrl = $"https://api.isthereanydeal.com/games/storelow/v2?key={apiKey}&country=JP&shops={SteamShopId}";
             using StringContent body = new(JsonSerializer.Serialize(new[] { new { id = lookup.Game.Id } }), Encoding.UTF8, "application/json");
-            using HttpResponseMessage response = await client.PostAsync(storeLowUrl, body);
+            using HttpResponseMessage response = await client.PostAsync(new Uri(storeLowUrl), body);
             if (!response.IsSuccessStatusCode)
             {
-                logger.LogWarning("⚠️ ITAD storelow request failed for app id {appId}: {statusCode} {reasonPhrase}", appId, (int)response.StatusCode, response.ReasonPhrase);
+                logger.LogWarning("⚠️ ITAD storelow request failed for app id {AppId}: {StatusCode} {ReasonPhrase}", appId, (int)response.StatusCode, response.ReasonPhrase);
                 return null;
             }
 
@@ -90,7 +90,7 @@ public class GetLowestPrice(IHttpClientFactory httpClientFactory, IConfiguration
               .FirstOrDefault(low => low.Shop.Id == SteamShopId);
             if (steamLow is null)
             {
-                logger.LogInformation("ITAD does not have a Steam price history for app id {appId}", appId);
+                logger.LogInformation("ITAD does not have a Steam price history for app id {AppId}", appId);
                 return null;
             }
 
@@ -98,7 +98,7 @@ public class GetLowestPrice(IHttpClientFactory httpClientFactory, IConfiguration
         }
         catch (Exception ex)
         {
-            logger.LogWarning(ex, "⚠️ Failed to get lowest price from ITAD for app id {appId}", appId);
+            logger.LogWarning(ex, "⚠️ Failed to get lowest price from ITAD for app id {AppId}", appId);
             return null;
         }
     }
@@ -118,7 +118,7 @@ public class GetLowestPrice(IHttpClientFactory httpClientFactory, IConfiguration
             var gameId = lookup?.FirstOrDefault()?.GameId;
             if (string.IsNullOrEmpty(gameId))
             {
-                logger.LogInformation("CheapShark does not have a game entry for app id {appId}", appId);
+                logger.LogInformation("CheapShark does not have a game entry for app id {AppId}", appId);
                 return null;
             }
 
@@ -127,7 +127,7 @@ public class GetLowestPrice(IHttpClientFactory httpClientFactory, IConfiguration
             var priceText = info?.CheapestPriceEver?.Price;
             if (string.IsNullOrEmpty(priceText) || !decimal.TryParse(priceText, NumberStyles.Any, CultureInfo.InvariantCulture, out var price))
             {
-                logger.LogInformation("CheapShark does not have a price history for app id {appId}", appId);
+                logger.LogInformation("CheapShark does not have a price history for app id {AppId}", appId);
                 return null;
             }
 
@@ -135,7 +135,7 @@ public class GetLowestPrice(IHttpClientFactory httpClientFactory, IConfiguration
         }
         catch (Exception ex)
         {
-            logger.LogWarning(ex, "⚠️ Failed to get lowest price from CheapShark for app id {appId}", appId);
+            logger.LogWarning(ex, "⚠️ Failed to get lowest price from CheapShark for app id {AppId}", appId);
             return null;
         }
     }

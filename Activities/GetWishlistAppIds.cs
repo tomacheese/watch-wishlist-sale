@@ -32,7 +32,7 @@ public class GetWishlistAppIds(IHttpClientFactory httpClientFactory, ILogger<Get
         WishlistApiResponse? result = await client.GetFromJsonAsync<WishlistApiResponse>(url);
         List<WishlistItem>? items = result?.Response?.Items ?? throw new InvalidOperationException("Failed to get wishlist items.");
         List<long> appIds = [.. items.Select(item => item.AppId)];
-        logger.LogInformation("Got {appIdsCount} app ids.", appIds.Count);
+        logger.LogInformation("Got {AppIdsCount} app ids.", appIds.Count);
         return appIds;
     }
 }

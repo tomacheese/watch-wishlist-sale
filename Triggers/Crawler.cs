@@ -24,10 +24,12 @@ public class Crawler(IConfiguration configuration, ILogger<Crawler> logger)
         [TimerTrigger("0 0 * * * *")] TimerInfo myTimer,
         [DurableClient] DurableTaskClient client)
     {
-        logger.LogInformation("Timer trigger function executed at: {executionTime}", DateTime.Now);
+        ArgumentNullException.ThrowIfNull(myTimer);
+        ArgumentNullException.ThrowIfNull(client);
+        logger.LogInformation("Timer trigger function executed at: {ExecutionTime}", DateTime.Now);
         if (myTimer.ScheduleStatus is not null)
         {
-            logger.LogInformation("Next timer schedule at: {nextSchedule}", myTimer.ScheduleStatus.Next);
+            logger.LogInformation("Next timer schedule at: {NextSchedule}", myTimer.ScheduleStatus.Next);
         }
 
         var profileId = configuration["STEAM_PROFILE_ID"]
@@ -39,7 +41,7 @@ public class Crawler(IConfiguration configuration, ILogger<Crawler> logger)
         if (existingInstance is { RuntimeStatus: OrchestrationRuntimeStatus.Running or OrchestrationRuntimeStatus.Pending })
         {
             logger.LogInformation(
-                "Orchestration is already running (status: {status}). Skipping this run.",
+                "Orchestration is already running (status: {Status}). Skipping this run.",
                 existingInstance.RuntimeStatus);
             return;
         }

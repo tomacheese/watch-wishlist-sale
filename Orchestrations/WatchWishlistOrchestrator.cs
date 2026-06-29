@@ -61,6 +61,7 @@ public static class WatchWishlistOrchestrator
     public static async Task RunOrchestrator(
         [OrchestrationTrigger] TaskOrchestrationContext context)
     {
+        ArgumentNullException.ThrowIfNull(context);
         ILogger logger = context.CreateReplaySafeLogger(nameof(WatchWishlistOrchestrator));
 
         var profileId = context.GetInput<string>()
@@ -68,7 +69,7 @@ public static class WatchWishlistOrchestrator
         logger.LogInformation("Starting crawler orchestrator.");
 
         List<long> appIds = await context.CallActivityAsync<List<long>>(FunctionNames.GetWishlistAppIdsActivity, profileId, ActivityRetryOptions);
-        logger.LogInformation("Got {appIdsCount} app ids.", appIds.Count);
+        logger.LogInformation("Got {AppIdsCount} app ids.", appIds.Count);
 
         // 2. 各 App ID の詳細情報を並列取得 (Fan-out)
         // 全件を一度に Fan-out すると外部 API のレート制限に抵触しかねないため、
@@ -91,12 +92,12 @@ public static class WatchWishlistOrchestrator
 
         List<AppDetails> appDetailsList = [.. appDetailsResults.OfType<AppDetails>()];
         logger.LogInformation(
-            "Got {appDetailsCount} app details ({failedCount} failed)",
+            "Got {AppDetailsCount} app details ({FailedCount} failed)",
             appDetailsList.Count,
             appDetailsResults.Count - appDetailsList.Count);
 
         List<AppDetails> saleApps = await context.CallActivityAsync<List<AppDetails>>(FunctionNames.FilterSaleAppsActivity, appDetailsList);
-        logger.LogInformation("Got {saleAppsCount} sale apps", saleApps.Count);
+        logger.LogInformation("Got {SaleAppsCount} sale apps", saleApps.Count);
 
         // 4. 通知状態エンティティ (旧実装の notified.json 相当) から、前回までの通知状況を取得
         EntityInstanceId entityId = new(FunctionNames.NotificationStateEntity, profileId);
@@ -108,7 +109,7 @@ public static class WatchWishlistOrchestrator
             var currentPrice = app.PriceOverview!.Final / 100m;
             return !snapshot.notifiedPrices.TryGetValue(app.SteamAppId, out var notifiedPrice) || notifiedPrice != currentPrice;
         })];
-        logger.LogInformation("Got {targetAppsCount} apps to notify", targetApps.Count);
+        logger.LogInformation("Got {TargetAppsCount} apps to notify", targetApps.Count);
 
         // 6. 通知対象アプリの過去最安値を並列取得 (Fan-out)
         // こちらも同様に、チャンクに分けて LowestPriceFanOutInterval だけ待機を挟みながら Fan-out/Fan-in する
@@ -132,7 +133,7 @@ public static class WatchWishlistOrchestrator
         // 7. 初回実行時はウィッシュリスト全体が通知対象になってしまうため、Discord への送信は行わず状態の記録のみ行う
         if (snapshot.isFirstRun)
         {
-            logger.LogInformation("First run detected. Recording state without sending Discord notification for {count} apps", notifications.Count);
+            logger.LogInformation("First run detected. Recording state without sending Discord notification for {Count} apps", notifications.Count);
         }
         else
         {
@@ -153,7 +154,7 @@ public static class WatchWishlistOrchestrator
                 continue;
             }
 
-            logger.LogInformation("❌ Removing notification record for app id: {appId}", notifiedAppId);
+            logger.LogInformation("❌ Removing notification record for app id: {AppId}", notifiedAppId);
             await context.Entities.CallEntityAsync(entityId, NotificationStateEntity.OperationRemoveNotified, notifiedAppId);
         }
 
