@@ -27,7 +27,7 @@ public class SendDiscordNotification(IHttpClientFactory httpClientFactory, IConf
     /// <param name="notifications">送信するセール通知の一覧</param>
     /// <returns>送信完了を表す非同期タスク</returns>
     [Function(FunctionNames.SendDiscordNotificationActivity)]
-    [SuppressMessage("Design", "CA1002:Do not expose generic lists", Justification = "Azure Functions Durable Activity receives List<T> as parameter via JSON deserialization.")]
+    [SuppressMessage("Design", "CA1002", Justification = "Durable Functions Activity の入出力は List<T> を直接 JSON シリアライズするため変更不可。")]
     public async Task SendDiscordNotificationActivity([ActivityTrigger] List<SaleNotification> notifications)
     {
         ArgumentNullException.ThrowIfNull(notifications);

@@ -19,7 +19,7 @@ public class FilterSaleApps(ILogger<FilterSaleApps> logger)
     /// <param name="appDetails">アプリ詳細情報の一覧</param>
     /// <returns>現在割引中のアプリ詳細情報の一覧</returns>
     [Function(FunctionNames.FilterSaleAppsActivity)]
-    [SuppressMessage("Design", "CA1002:Do not expose generic lists", Justification = "Azure Functions Durable Activity serializes/deserializes List<T> directly via JSON.")]
+    [SuppressMessage("Design", "CA1002", Justification = "Durable Functions Activity の入出力は List<T> を直接 JSON シリアライズするため変更不可。")]
     public List<AppDetails> FilterSaleAppsActivity([ActivityTrigger] List<AppDetails> appDetails)
     {
         ArgumentNullException.ThrowIfNull(appDetails);
