@@ -24,7 +24,7 @@ public class SendDiscordNotification(IHttpClientFactory httpClientFactory, IConf
     /// アクティビティのエントリーポイント。セール通知一覧を Discord Webhook 経由で送信する。
     /// </summary>
     /// <param name="notifications">送信するセール通知の一覧</param>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous operation.</placeholder></returns>
+    /// <returns>送信完了を表す非同期タスク</returns>
     [Function(FunctionNames.SendDiscordNotificationActivity)]
     public async Task SendDiscordNotificationActivity([ActivityTrigger] List<SaleNotification> notifications)
     {

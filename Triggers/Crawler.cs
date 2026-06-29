@@ -18,7 +18,7 @@ public class Crawler(IConfiguration configuration, ILogger<Crawler> logger)
     /// </summary>
     /// <param name="myTimer">タイマートリガーの情報 (スケジュール状態を含む)</param>
     /// <param name="client">Durable Functions のクライアント。オーケストレーター起動に使用する</param>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous operation.</placeholder></returns>
+    /// <returns>処理完了を表す非同期タスク</returns>
     [Function(FunctionNames.RunCrawler)]
     public async Task RunCrawler(
         [TimerTrigger("0 0 * * * *")] TimerInfo myTimer,
