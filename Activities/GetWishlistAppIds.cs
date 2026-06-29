@@ -17,6 +17,11 @@ namespace WatchWishlistSale.Activities;
 /// </summary>
 public class GetWishlistAppIds(IHttpClientFactory httpClientFactory, ILogger<GetWishlistAppIds> logger)
 {
+    /// <summary>
+    /// アクティビティのエントリーポイント。指定した Steam プロフィール ID のウィッシュリストから App ID 一覧を取得して返す。
+    /// </summary>
+    /// <param name="profileId">ウィッシュリストを取得する Steam プロフィールの SteamID64</param>
+    /// <returns>ウィッシュリストに登録されている Steam アプリ ID の一覧</returns>
     [Function(FunctionNames.GetWishlistAppIdsActivity)]
     public async Task<List<long>> GetWishlistAppIdsActivity([ActivityTrigger] string profileId)
     {

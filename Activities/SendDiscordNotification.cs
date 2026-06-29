@@ -20,6 +20,11 @@ public class SendDiscordNotification(IHttpClientFactory httpClientFactory, IConf
     /// <summary>通知 embed の色 (オレンジ)</summary>
     private const int EmbedColor = 0xff_80_00;
 
+    /// <summary>
+    /// アクティビティのエントリーポイント。セール通知一覧を Discord Webhook 経由で送信する。
+    /// </summary>
+    /// <param name="notifications">送信するセール通知の一覧</param>
+    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous operation.</placeholder></returns>
     [Function(FunctionNames.SendDiscordNotificationActivity)]
     public async Task SendDiscordNotificationActivity([ActivityTrigger] List<SaleNotification> notifications)
     {

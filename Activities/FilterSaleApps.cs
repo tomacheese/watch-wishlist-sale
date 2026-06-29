@@ -12,6 +12,11 @@ namespace WatchWishlistSale.Activities;
 /// </summary>
 public class FilterSaleApps(ILogger<FilterSaleApps> logger)
 {
+    /// <summary>
+    /// アクティビティのエントリーポイント。アプリ詳細一覧からセール中のアプリだけを抽出して返す。
+    /// </summary>
+    /// <param name="appDetails">アプリ詳細情報の一覧</param>
+    /// <returns>現在割引中のアプリ詳細情報の一覧</returns>
     [Function(FunctionNames.FilterSaleAppsActivity)]
     public List<AppDetails> FilterSaleAppsActivity([ActivityTrigger] List<AppDetails> appDetails)
     {

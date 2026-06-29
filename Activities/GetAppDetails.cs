@@ -11,6 +11,11 @@ namespace WatchWishlistSale.Activities;
 /// </summary>
 public class GetAppDetails(IHttpClientFactory httpClientFactory, ILogger<GetAppDetails> logger)
 {
+    /// <summary>
+    /// アクティビティのエントリーポイント。指定した Steam アプリ ID の詳細情報を取得して返す。
+    /// </summary>
+    /// <param name="appId">詳細情報を取得する Steam アプリ ID</param>
+    /// <returns>アプリ詳細情報。取得できない場合は <see langword="null"/></returns>
     [Function(FunctionNames.GetAppDetailsActivity)]
     public async Task<AppDetails?> GetAppDetailsActivity([ActivityTrigger] long appId)
     {

@@ -12,6 +12,13 @@ namespace WatchWishlistSale.Triggers;
 /// </summary>
 public class Crawler(IConfiguration configuration, ILogger<Crawler> logger)
 {
+    /// <summary>
+    /// タイマートリガーのエントリーポイント。毎時 0 分に起動し、WatchWishlistOrchestrator を開始する。
+    /// 同一プロフィールに対するオーケストレーターの多重起動を防ぐためシングルトンパターンを使用する。
+    /// </summary>
+    /// <param name="myTimer">タイマートリガーの情報 (スケジュール状態を含む)</param>
+    /// <param name="client">Durable Functions のクライアント。オーケストレーター起動に使用する</param>
+    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous operation.</placeholder></returns>
     [Function(FunctionNames.RunCrawler)]
     public async Task RunCrawler(
         [TimerTrigger("0 0 * * * *")] TimerInfo myTimer,

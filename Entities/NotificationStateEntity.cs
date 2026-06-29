@@ -48,9 +48,15 @@ public class NotificationStateEntity : TaskEntity<NotificationState>
     /// <summary>
     /// エンティティの状態が未生成の場合の初期値を返す
     /// </summary>
-    /// <returns></returns>
+    /// <param name="entityOperation">エンティティに対して実行される操作の情報</param>
+    /// <returns>初期状態の <see cref="NotificationState"/></returns>
     protected override NotificationState InitializeState(TaskEntityOperation entityOperation) => new();
 
+    /// <summary>
+    /// Durable Entity のエントリーポイント。受信した操作をエンティティクラスにディスパッチする。
+    /// </summary>
+    /// <param name="dispatcher">エンティティへの操作をディスパッチするオブジェクト</param>
+    /// <returns>ディスパッチ完了を表す <see cref="Task"/></returns>
     [Function(FunctionNames.NotificationStateEntity)]
     public static Task DispatchAsync([EntityTrigger] TaskEntityDispatcher dispatcher)
       => dispatcher.DispatchAsync<NotificationStateEntity>();

@@ -29,6 +29,11 @@ public class GetLowestPrice(IHttpClientFactory httpClientFactory, IConfiguration
     /// <summary>ITAD における Steam ショップの内部 ID</summary>
     private const int SteamShopId = 61;
 
+    /// <summary>
+    /// アクティビティのエントリーポイント。ITAD または CheapShark から過去最安値を取得して返す。
+    /// </summary>
+    /// <param name="appId">最安値を調べる Steam アプリ ID</param>
+    /// <returns>過去最安値の取得結果。取得できない場合は <see langword="null"/></returns>
     [Function(FunctionNames.GetLowestPriceActivity)]
     public async Task<LowestPriceResult?> GetLowestPriceActivity([ActivityTrigger] long appId)
     {

@@ -51,6 +51,12 @@ public static class WatchWishlistOrchestrator
     /// </summary>
     private static readonly TimeSpan LowestPriceFanOutInterval = TimeSpan.FromSeconds(2);
 
+    /// <summary>
+    /// オーケストレーターのエントリーポイント。
+    /// ウィッシュリスト取得・詳細情報収集・フィルタリング・最安値取得・Discord 通知・状態更新の一連のフローを実行する。
+    /// </summary>
+    /// <param name="context">オーケストレーター実行コンテキスト</param>
+    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous operation.</placeholder></returns>
     [Function(FunctionNames.CrawlerOrchestrator)]
     public static async Task RunOrchestrator(
         [OrchestrationTrigger] TaskOrchestrationContext context)
