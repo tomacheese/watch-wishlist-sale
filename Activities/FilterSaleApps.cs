@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using WatchWishlistSale.Common;
@@ -18,6 +19,7 @@ public class FilterSaleApps(ILogger<FilterSaleApps> logger)
     /// <param name="appDetails">アプリ詳細情報の一覧</param>
     /// <returns>現在割引中のアプリ詳細情報の一覧</returns>
     [Function(FunctionNames.FilterSaleAppsActivity)]
+    [SuppressMessage("Design", "CA1002:Do not expose generic lists", Justification = "Azure Functions Durable Activity serializes/deserializes List<T> directly via JSON.")]
     public List<AppDetails> FilterSaleAppsActivity([ActivityTrigger] List<AppDetails> appDetails)
     {
         ArgumentNullException.ThrowIfNull(appDetails);

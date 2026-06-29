@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Json;
 using Microsoft.Azure.Functions.Worker;
@@ -26,6 +27,7 @@ public class SendDiscordNotification(IHttpClientFactory httpClientFactory, IConf
     /// <param name="notifications">送信するセール通知の一覧</param>
     /// <returns>送信完了を表す非同期タスク</returns>
     [Function(FunctionNames.SendDiscordNotificationActivity)]
+    [SuppressMessage("Design", "CA1002:Do not expose generic lists", Justification = "Azure Functions Durable Activity receives List<T> as parameter via JSON deserialization.")]
     public async Task SendDiscordNotificationActivity([ActivityTrigger] List<SaleNotification> notifications)
     {
         ArgumentNullException.ThrowIfNull(notifications);
