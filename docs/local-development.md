@@ -1,42 +1,42 @@
-# ローカル開発
+# Local Development
 
-## 必要なもの
+## Prerequisites
 
 - [.NET SDK](https://dotnet.microsoft.com/) (.NET 10)
-- [Azure Functions Core Tools](https://learn.microsoft.com/azure/azure-functions/functions-run-local) (`func` コマンド)
-- [Azurite](https://learn.microsoft.com/azure/storage/common/storage-use-azurite) (Azure Storage のローカルエミュレーター)
+- [Azure Functions Core Tools](https://learn.microsoft.com/azure/azure-functions/functions-run-local) (the `func` command)
+- [Azurite](https://learn.microsoft.com/azure/storage/common/storage-use-azurite) (Azure Storage local emulator)
 
-## Azurite の起動
+## Starting Azurite
 
-Durable Functions はオーケストレーションの実行履歴やエンティティの状態を Azure Storage (Blob / Queue / Table) に永続化します ([`host.json`](../host.json) の `durableTask.storageProvider.type: "AzureStorage"`)。ローカルでは Azurite を起動しておくことで、Azure 上に Storage アカウントを用意せずに完結させられます。
+Durable Functions persists orchestration execution history and entity state to Azure Storage (Blob / Queue / Table) (see `durableTask.storageProvider.type: "AzureStorage"` in [`host.json`](../host.json)). By running Azurite locally, you can complete the setup without provisioning a Storage account on Azure.
 
 ```bash
-# npm 経由でインストールする場合
+# If installing via npm
 npm install -g azurite
 
-# 起動 (デフォルトではカレントディレクトリにデータを保存する)
+# Start (by default, data is saved to the current directory)
 azurite
 ```
 
-起動すると Blob (既定で `10000` 番ポート) / Queue (`10001`) / Table (`10002`) の 3 つのエンドポイントが待ち受け状態になります。`__blobstorage__` / `__queuestorage__` ディレクトリが生成されますが、これらは Git の管理対象外です。
+Once started, three endpoints (Blob on port `10000`, Queue `10001`, and Table `10002` by default) will be listening. `__blobstorage__` / `__queuestorage__` directories will be created, but these are not managed by Git.
 
-## 設定ファイルの準備
+## Preparing Configuration Files
 
-[`local.settings.json`](../local.settings.json) を作成します。詳細は [configuration.md](configuration.md) を参照してください。
+Create [`local.settings.json`](../local.settings.json). For details, see [configuration.md](configuration.md).
 
-## `func start`: ローカルでの起動
+## `func start`: Running Locally
 
 ```bash
-# Azurite を別ターミナルで起動しておく
+# Start Azurite in another terminal
 azurite
 
-# Functions ホストを起動する
+# Start the Functions host
 func start
 ```
 
-起動に成功すると、`RunCrawler` / `CrawlerOrchestrator` / `GetWishlistAppIdsActivity` などの Function 一覧がコンソールに表示され、ホストが待ち受け状態になります。`RunCrawler` は `[TimerTrigger("0 0 * * * *")]` (毎時 0 分) で動作するため、動作確認のためには次項の方法で手動トリガーします。
+If startup is successful, a list of Functions such as `RunCrawler` / `CrawlerOrchestrator` / `GetWishlistAppIdsActivity` will be displayed in the console, and the host will be listening. `RunCrawler` operates on a `[TimerTrigger("0 0 * * * *")]` schedule (at minute 0 every hour), so for testing, manually trigger it using the method in the next section.
 
-## Function を手動でトリガーする
+## Manually Triggering a Function
 
 ```bash
 curl -X POST "http://localhost:7071/admin/functions/RunCrawler" \
@@ -44,26 +44,26 @@ curl -X POST "http://localhost:7071/admin/functions/RunCrawler" \
   -d '{ "input": "" }'
 ```
 
-これにより `RunCrawler` が起動し、`client.ScheduleNewOrchestrationInstanceAsync` が呼び出されてオーケストレーションが開始されます。
+This starts `RunCrawler`, which calls `client.ScheduleNewOrchestrationInstanceAsync` and begins the orchestration.
 
-## オーケストレーションの実行状況を確認する
+## Checking Orchestration Execution Status
 
 ```bash
-# instanceId は "{CrawlerOrchestrator}-{profileId}" の形式 (例: CrawlerOrchestrator-76561198072825180)
-curl "http://localhost:7071/runtime/webhooks/durabletask/instances/CrawlerOrchestrator-<STEAM_PROFILE_ID の値>"
+# instanceId is in the format "{CrawlerOrchestrator}-{profileId}" (e.g., CrawlerOrchestrator-76561198072825180)
+curl "http://localhost:7071/runtime/webhooks/durabletask/instances/CrawlerOrchestrator-<STEAM_PROFILE_ID value>"
 ```
 
-レスポンスの `runtimeStatus` フィールドで状態を確認できます。
+You can check the status using the `runtimeStatus` field in the response.
 
-| `runtimeStatus` | 意味 |
+| `runtimeStatus` | Meaning |
 |---|---|
-| `Pending` | 開始待ち |
-| `Running` | 実行中 |
-| `Completed` | 正常に完了した |
-| `Failed` | 失敗して終了した |
+| `Pending` | Waiting to start |
+| `Running` | In progress |
+| `Completed` | Completed successfully |
+| `Failed` | Terminated due to failure |
 
-## デバッグのヒント
+## Debugging Tips
 
-- **初回実行時は Discord に通知が飛ばない**: `NotificationSnapshot.isFirstRun` が `true` の間は通知がスキップされ、状態の記録だけが行われます。状態をリセットして初回実行の挙動を再現したい場合は、Azurite のデータ (`__blobstorage__` / `__queuestorage__` ディレクトリ) を削除してから起動し直してください。
-- **同じインスタンス ID のオーケストレーションは再利用される**: シングルトンパターンにより、`Running`/`Pending` 状態のインスタンスがあると新規実行はスキップされます。手動トリガーしても何も起きない場合は、まず現在のインスタンスの状態を確認してください。
-- **外部 API のレート制限に注意する**: Steam・IsThereAnyDeal・CheapShark にはレート制限があります。動作確認のために何度も手動トリガーする際は間隔を空けてください。
+- **Discord notifications are not sent on first run**: While `NotificationSnapshot.isFirstRun` is `true`, notifications are skipped and only the state is recorded. If you want to reset the state and reproduce the first-run behavior, delete Azurite's data directories (`__blobstorage__` / `__queuestorage__`) and restart.
+- **Orchestrations with the same instance ID are reused**: Using the singleton pattern, if an instance in `Running`/`Pending` state exists, new runs are skipped. If nothing happens when manually triggering, first check the current instance status.
+- **Be aware of rate limits on external APIs**: Steam, IsThereAnyDeal, and CheapShark have rate limits. When manually triggering multiple times for testing, space out the requests.

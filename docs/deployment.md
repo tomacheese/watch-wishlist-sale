@@ -1,28 +1,28 @@
-# デプロイ
+# Deployment
 
-## Azure Functions への自動デプロイ
+## Automatic Deployment to Azure Functions
 
-[`.github/workflows/azure-functions-deploy.yml`](../.github/workflows/azure-functions-deploy.yml) により、`main`/`master` ブランチへの push (または手動の `workflow_dispatch`) をトリガーに、GitHub Actions が自動的に以下を実行します。
+GitHub Actions automatically performs the following when triggered by a push to the `main`/`master` branch (or manual `workflow_dispatch`) via [`.github/workflows/azure-functions-deploy.yml`](../.github/workflows/azure-functions-deploy.yml):
 
-1. `dotnet publish --configuration Release --output ./output` でビルド成果物を出力する。
-2. OIDC 認証で Azure にログインする。
-3. `Azure/functions-action` で Azure Functions アプリにデプロイする。
+1. Outputs build artifacts with `dotnet publish --configuration Release --output ./output`.
+2. Logs in to Azure using OIDC authentication.
+3. Deploys to the Azure Functions app using `Azure/functions-action`.
 
-## 必要な GitHub Secrets
+## Required GitHub Secrets
 
-| Secret 名 | 用途 |
+| Secret Name | Purpose |
 |---|---|
-| `AZURE_CLIENT_ID` | OIDC 認証に使用する Azure AD アプリケーションのクライアント ID |
-| `AZURE_TENANT_ID` | Azure AD テナント ID |
-| `AZURE_SUBSCRIPTION_ID` | デプロイ先の Azure サブスクリプション ID |
-| `AZURE_FUNCTIONAPP_NAME` | デプロイ先の Function App 名 |
+| `AZURE_CLIENT_ID` | Client ID of the Azure AD application used for OIDC authentication |
+| `AZURE_TENANT_ID` | Azure AD tenant ID |
+| `AZURE_SUBSCRIPTION_ID` | Azure subscription ID of the deployment target |
+| `AZURE_FUNCTIONAPP_NAME` | Name of the Function App to deploy to |
 
-これらは GitHub リポジトリの `production` environment に設定されている想定です (ワークフロー内 `environment: production` を参照)。
+These are expected to be configured in the `production` environment of the GitHub repository (see `environment: production` in the workflow).
 
-## CI (ビルド確認)
+## CI (Build Verification)
 
-[`.github/workflows/dotnet-ci.yml`](../.github/workflows/dotnet-ci.yml) が `push`/`pull_request` (対象ブランチ: `main`/`master`) をトリガーに `dotnet restore` → `dotnet build` を実行し、ビルドが通ることを確認します。
+[`.github/workflows/dotnet-ci.yml`](../.github/workflows/dotnet-ci.yml) executes `dotnet restore` → `dotnet build` when triggered by `push`/`pull_request` (target branches: `main`/`master`) and verifies the build succeeds.
 
-## スコープ外
+## Out of Scope
 
-Azure リソース (Function App / Storage アカウントなど) 自体のプロビジョニング手順は、このドキュメントの対象外です。既存の Azure リソースに対して、上記ワークフローがコードをデプロイする、という前提で説明しています。
+Provisioning procedures for Azure resources themselves (Function App / Storage accounts, etc.) are outside the scope of this document. This document assumes existing Azure resources to which the above workflows deploy code.

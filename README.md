@@ -1,22 +1,22 @@
 # watch-wishlist-sale
 
-Steam のウィッシュリストを監視し、セール中かつ値下がりしたアプリを Discord に通知するサーバーレスアプリケーションです。
+A serverless application that monitors your Steam wishlist and sends Discord notifications when apps go on sale and drop in price.
 
-## 機能
+## Features
 
-- Steam ウィッシュリストを毎時 1 回巡回
-- セール中 (かつ前回通知時から値下がりした) アプリを検出
-- 過去最安値 ([IsThereAnyDeal](https://isthereanydeal.com/) 経由) と比較した情報を含めて Discord に通知
-- 通知済み状態を Durable Entity で永続化し、重複通知を防止
+- Polls Steam wishlist once per hour
+- Detects apps on sale (and that have dropped in price since the last notification)
+- Sends Discord notifications with information compared against historical lowest price (via IsThereAnyDeal)
+- Persists notification state using Durable Entities to prevent duplicate notifications
 
-## 必要要件
+## Requirements
 
 - [.NET 10 SDK](https://dotnet.microsoft.com/)
-- [Azure Functions Core Tools](https://learn.microsoft.com/azure/azure-functions/functions-run-local) (ローカル実行時)
-- [Azurite](https://learn.microsoft.com/azure/storage/common/storage-use-azurite) (ローカル実行時、Azure Storage エミュレーター)
-- Discord Webhook URL / Steam SteamID64 / IsThereAnyDeal API キー
+- [Azure Functions Core Tools](https://learn.microsoft.com/azure/azure-functions/functions-run-local) (for local execution)
+- [Azurite](https://learn.microsoft.com/azure/storage/common/storage-use-azurite) (for local execution, Azure Storage emulator)
+- Discord Webhook URL / Steam SteamID64 / IsThereAnyDeal API key
 
-## セットアップ
+## Setup
 
 ```bash
 git clone https://github.com/tomacheese/watch-wishlist-sale.git
@@ -24,28 +24,28 @@ cd watch-wishlist-sale
 dotnet restore
 ```
 
-`local.settings.json` の作成が必要です。詳細は [docs/local-development.md](docs/local-development.md) を参照してください。
+You must create `local.settings.json`. For details, see [docs/local-development.md](docs/local-development.md).
 
-## 設定
+## Configuration
 
-主な環境変数は次の通りです。詳細は [docs/configuration.md](docs/configuration.md) を参照してください。
+Key environment variables are listed below. For details, see [docs/configuration.md](docs/configuration.md).
 
-| キー | 説明 |
+| Key | Description |
 |---|---|
-| `AzureWebJobsStorage` | Durable Functions の状態永続化に使う Storage への接続文字列 |
-| `FUNCTIONS_WORKER_RUNTIME` | ワーカーの実行ランタイム (`dotnet-isolated`) |
-| `STEAM_PROFILE_ID` | 監視対象のウィッシュリストを持つアカウントの SteamID64 |
-| `DISCORD_WEBHOOK_URL` | 通知を送信する Discord チャンネルの Webhook URL |
-| `ITAD_API_KEY` | IsThereAnyDeal の API キー |
+| `AzureWebJobsStorage` | Connection string to Storage used for persisting Durable Functions state |
+| `FUNCTIONS_WORKER_RUNTIME` | Worker runtime (`dotnet-isolated`) |
+| `STEAM_PROFILE_ID` | SteamID64 of the account whose wishlist to monitor |
+| `DISCORD_WEBHOOK_URL` | Webhook URL of the Discord channel to send notifications to |
+| `ITAD_API_KEY` | IsThereAnyDeal API key |
 
-## アーキテクチャ
+## Architecture
 
-処理フローやフォルダー構成については [docs/architecture.md](docs/architecture.md) を参照してください。
+For processing flow and folder structure, see [docs/architecture.md](docs/architecture.md).
 
-## デプロイ
+## Deployment
 
-`main`/`master` ブランチへの push をトリガーに、GitHub Actions が Azure Functions へ自動デプロイします。詳細は [docs/deployment.md](docs/deployment.md) を参照してください。
+GitHub Actions automatically deploys to Azure Functions triggered by a push to the `main`/`master` branch. For details, see [docs/deployment.md](docs/deployment.md).
 
-## ライセンス
+## License
 
-このプロジェクトは [MIT](LICENSE) ライセンスの下で公開されています。
+This project is published under the [MIT](LICENSE) license.
