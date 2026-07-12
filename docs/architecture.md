@@ -34,7 +34,7 @@ WatchWishlistSale は、Azure Functions の Durable Functions を使って実装
 [`Orchestrations/WatchWishlistOrchestrator.cs`](../Orchestrations/WatchWishlistOrchestrator.cs) が実行する処理は、次の流れになっています。
 
 1. **ウィッシュリストの App ID 一覧を取得**: [`GetWishlistAppIds`](../Activities/GetWishlistAppIds.cs) が Steam の Web API (`IWishlistService/GetWishlist/v1`) を呼び出す。
-2. **各アプリの詳細情報を並列取得**: [`GetAppDetails`](../Activities/GetAppDetails.cs) を Fan-out/Fan-in で並列実行する。Steam ストア API のレート制限 (約 200 リクエスト / 5 分) に配慮し、一定件数ずつチャンク分割してチャンク間に待機を挟む。
+2. **各アプリの詳細情報を並列取得**: [`GetAppDetails`](../Activities/GetAppDetails.cs) を Fan-out/Fan-in で並列実行する。Steam ストア API のレート制限に配慮し、一定件数ずつチャンク分割してチャンク間に待機を挟む (具体的なチャンクサイズ・待機時間は [`WatchWishlistOrchestrator.cs`](../Orchestrations/WatchWishlistOrchestrator.cs) を参照)。
 3. **セール中のアプリを抽出**: [`FilterSaleApps`](../Activities/FilterSaleApps.cs) が、価格情報があり割引率が 0 でないアプリだけを残す。
 4. **前回までの通知状態を取得**: [`NotificationStateEntity`](../Entities/NotificationStateEntity.cs) から、前回どのアプリをいくらで通知したかのスナップショットを取得する。
 5. **通知対象を絞り込む**: まだ通知していない、または前回通知時から価格が変わったアプリだけに絞り込み、重複通知を防ぐ。
