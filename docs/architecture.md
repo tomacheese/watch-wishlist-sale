@@ -1,6 +1,6 @@
 # Architecture and Processing Flow
 
-WatchWishlistSale is a serverless batch application implemented using Azure Functions' Durable Functions. This document describes the overall system architecture and processing flow.
+WatchWishlistSale is a serverless batch application implemented using Durable Functions, an extension of Azure Functions. This document describes the overall system architecture and processing flow.
 
 ## Overall Architecture Diagram
 
