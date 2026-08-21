@@ -9,7 +9,9 @@ on:
 
 concurrency:
   group: azure-deploy
-  cancel-in-progress: true
+  cancel-in-progress: false
+
+permissions: {}
 
 env:
   DOTNET_VERSION: "10.0.x"
@@ -43,6 +45,28 @@ jobs:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: 🔍 Bicep what-if
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          ITAD_API_KEY: ${{ secrets.ITAD_API_KEY }}
+          STEAM_PROFILE_ID: ${{ secrets.STEAM_PROFILE_ID }}
+        run: |
+          az deployment group what-if \
+            --resource-group "${{ vars.AZURE_RESOURCE_GROUP }}" \
+            --template-file infra/main.bicep \
+            --parameters infra/main.bicepparam
+
+      - name: 🚀 Deploy Bicep infrastructure
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          ITAD_API_KEY: ${{ secrets.ITAD_API_KEY }}
+          STEAM_PROFILE_ID: ${{ secrets.STEAM_PROFILE_ID }}
+        run: |
+          az deployment group create \
+            --resource-group "${{ vars.AZURE_RESOURCE_GROUP }}" \
+            --template-file infra/main.bicep \
+            --parameters infra/main.bicepparam
 
       - name: 🚀 Deploy to Azure Functions
         uses: Azure/functions-action@c5060b3b8bb1ebbcb531abd00c822ecbaa8ea656 # v1.5.7
