@@ -20,6 +20,7 @@ GitHub Actions automatically performs the following when triggered by a push to 
 | `AZURE_FUNCTIONAPP_NAME` | Name of the Function App to deploy to |
 | `DISCORD_WEBHOOK_URL` | Bicep parameter (`discordWebhookUrl`) passed to `infra/main.bicep` |
 | `ITAD_API_KEY` | Bicep parameter (`itadApiKey`) passed to `infra/main.bicep` |
+| `STEAM_PROFILE_ID` | Bicep parameter (`steamProfileId`) passed to `infra/main.bicep`. Stored as a secret (rather than a variable) so GitHub Actions masks it in run logs, even though the value itself is not a credential |
 
 These are configured at the repository level (Settings > Secrets and variables > Actions), consistent with the existing `AZURE_*` secrets above. The workflow's `environment: production` currently has no environment-level secrets or protection rules configured.
 
@@ -28,9 +29,8 @@ These are configured at the repository level (Settings > Secrets and variables >
 | Variable Name | Purpose |
 |---|---|
 | `AZURE_RESOURCE_GROUP` | Resource group name passed to `az deployment group what-if`/`create` |
-| `STEAM_PROFILE_ID` | Bicep parameter (`steamProfileId`) passed to `infra/main.bicep` |
 
-These are non-sensitive values, so they are configured as repository variables rather than secrets.
+This is a non-sensitive value, so it is configured as a repository variable rather than a secret.
 
 ## CI (Build Verification)
 
