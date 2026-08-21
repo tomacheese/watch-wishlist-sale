@@ -11,6 +11,8 @@ concurrency:
   group: azure-deploy
   cancel-in-progress: false
 
+permissions: {}
+
 env:
   DOTNET_VERSION: "10.0.x"
 
