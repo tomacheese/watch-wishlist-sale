@@ -9,7 +9,7 @@ on:
 
 concurrency:
   group: azure-deploy
-  cancel-in-progress: false # 進行中の本番デプロイ(Bicep 適用含む)を中断しないため
+  cancel-in-progress: false
 
 env:
   DOTNET_VERSION: "10.0.x"
