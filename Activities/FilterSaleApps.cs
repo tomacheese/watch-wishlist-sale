@@ -7,17 +7,17 @@ using WatchWishlistSale.Models.Wishlist;
 namespace WatchWishlistSale.Activities;
 
 /// <summary>
-/// アプリ詳細一覧から、現在販売中 (価格情報があり、かつ割引中) のアプリのみを抽出する Activity。
-/// 「前回通知時から価格が変わっていないか」の判定は NotificationStateEntity の状態が必要となるため、
-/// ここでは行わずオーケストレーター側で行う。
+/// Activity that extracts only the apps currently on sale (having price information and discounted) from the app details.
+/// Whether the price changed since the last notification needs the NotificationStateEntity state,
+/// so that check is done in the orchestrator instead.
 /// </summary>
 public class FilterSaleApps(ILogger<FilterSaleApps> logger)
 {
     /// <summary>
-    /// アクティビティのエントリーポイント。アプリ詳細一覧からセール中のアプリだけを抽出して返す。
+    /// Activity entry point. Returns only the apps on sale from the app details.
     /// </summary>
-    /// <param name="appDetails">アプリ詳細情報の一覧</param>
-    /// <returns>現在割引中のアプリ詳細情報の一覧</returns>
+    /// <param name="appDetails">List of app details.</param>
+    /// <returns>Details of the apps currently discounted.</returns>
     [Function(FunctionNames.FilterSaleAppsActivity)]
     [SuppressMessage("Design", "CA1002", Justification = "Durable Functions Activity の入出力は List<T> を直接 JSON シリアライズするため変更不可。")]
     public List<AppDetails> FilterSaleAppsActivity([ActivityTrigger] List<AppDetails> appDetails)
@@ -29,7 +29,7 @@ public class FilterSaleApps(ILogger<FilterSaleApps> logger)
         {
             if (app.PriceOverview is null)
             {
-                // 価格情報がない => 未発売 or 販売終了
+                // No price information: not yet released or no longer sold.
                 return false;
             }
 

@@ -3,39 +3,39 @@ using System.Text.Json.Serialization;
 namespace WatchWishlistSale.Models.Wishlist;
 
 /// <summary>
-/// Steam Web API (IWishlistService/GetWishlist/v1) のレスポンス全体
+/// Whole response of the Steam Web API (IWishlistService/GetWishlist/v1).
 /// </summary>
 public class WishlistApiResponse
 {
-    /// <summary>レスポンス本体</summary>
+    /// <summary>Response body.</summary>
     [JsonPropertyName("response")]
     public WishlistResponseBody? Response { get; set; }
 }
 
 /// <summary>
-/// ウィッシュリスト API のレスポンス本体
+/// Body of the wishlist API response.
 /// </summary>
 public class WishlistResponseBody
 {
-    /// <summary>ウィッシュリストに登録されているアイテム一覧</summary>
+    /// <summary>Items on the wishlist.</summary>
     [JsonPropertyName("items")]
     public IList<WishlistItem> Items { get; } = [];
 }
 
 /// <summary>
-/// ウィッシュリストの 1 アイテム
+/// One wishlist item.
 /// </summary>
 public class WishlistItem
 {
-    /// <summary>Steam アプリ ID</summary>
+    /// <summary>Steam app ID.</summary>
     [JsonPropertyName("appid")]
     public long AppId { get; set; }
 
-    /// <summary>ウィッシュリスト内の優先度</summary>
+    /// <summary>Priority within the wishlist.</summary>
     [JsonPropertyName("priority")]
     public int Priority { get; set; }
 
-    /// <summary>ウィッシュリストに追加された日時 (UNIX タイムスタンプ)</summary>
+    /// <summary>When the item was added to the wishlist (UNIX timestamp).</summary>
     [JsonPropertyName("date_added")]
     public long DateAdded { get; set; }
 }

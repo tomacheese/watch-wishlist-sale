@@ -7,21 +7,20 @@ using WatchWishlistSale.Models.Wishlist;
 namespace WatchWishlistSale.Activities;
 
 /// <summary>
-/// 指定した Steam プロフィールのウィッシュリストから、登録されているアプリ ID 一覧を取得する Activity。
+/// Activity that gets the app IDs on the wishlist of a Steam profile.
 ///
-/// 旧実装ではウィッシュリストページの HTML に埋め込まれた g_rgWishlistData をスクレイピングしていたが、
-/// Steam がウィッシュリストページを SPA 化したことで埋め込み JSON が廃止されたため、
-/// 公式の Steam Web API (IWishlistService/GetWishlist/v1) を利用する方式に変更した。
-/// このエンドポイントは API キー不要で呼び出せるが、引数には数値の SteamID64 を渡す必要がある
-/// (カスタム URL 名 (vanity name) は使用できない)。
+/// It uses the official Steam Web API (IWishlistService/GetWishlist/v1) because the wishlist page became an SPA
+/// and no longer embeds the wishlist JSON, so scraping the page is not possible.
+/// The endpoint needs no API key, but requires a numeric SteamID64
+/// (a custom URL name (vanity name) cannot be used).
 /// </summary>
 public class GetWishlistAppIds(IHttpClientFactory httpClientFactory, ILogger<GetWishlistAppIds> logger)
 {
     /// <summary>
-    /// アクティビティのエントリーポイント。指定した Steam プロフィール ID のウィッシュリストから App ID 一覧を取得して返す。
+    /// Activity entry point. Gets and returns the app IDs on the wishlist of the given Steam profile.
     /// </summary>
-    /// <param name="profileId">ウィッシュリストを取得する Steam プロフィールの SteamID64</param>
-    /// <returns>ウィッシュリストに登録されている Steam アプリ ID の一覧</returns>
+    /// <param name="profileId">SteamID64 of the Steam profile whose wishlist is fetched.</param>
+    /// <returns>The Steam app IDs on the wishlist.</returns>
     [Function(FunctionNames.GetWishlistAppIdsActivity)]
     public async Task<List<long>> GetWishlistAppIdsActivity([ActivityTrigger] string profileId)
     {

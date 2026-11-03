@@ -11,29 +11,24 @@ using WatchWishlistSale.Models.Pricing;
 namespace WatchWishlistSale.Activities;
 
 /// <summary>
-/// Steam アプリの過去最安値を取得する Activity。
-/// SteamDB は Cloudflare の Managed Challenge により直接スクレイピングできないため、
-/// IsThereAnyDeal (ITAD) API を主軸とし、取得できない場合は CheapShark API にフォールバックする。
-/// 参考: https://gist.github.com/akubiusa/4356652a26a66d6ac1a659d79600f989
+/// Activity that gets the historical lowest price of a Steam app.
+/// SteamDB cannot be scraped directly because of Cloudflare's Managed Challenge,
+/// so the IsThereAnyDeal (ITAD) API is primary and the CheapShark API is the fallback when ITAD has no result.
 ///
-/// 設計上のトレードオフ: ITAD と CheapShark への複数回の HTTP 呼び出しを 1 つの Activity にまとめている。
-/// 「Activity は外部 I/O を 1 回だけ行うべき」という原則に厳密には反するが、
-/// (1) どちらも「同じアプリの過去最安値を取得する」という単一の責務を構成する一連の処理であり、
-/// (2) フォールバック判定 (ITAD で取得できない場合のみ CheapShark を呼ぶ) はオーケストレーター内では
-///     決定論性の制約により行えず、Activity 側に委譲せざるを得ないため、
-/// あえて 1 つの Activity にまとめている。再試行は呼び出し元のオーケストレーターで
-/// Activity 単位のリトライポリシーとして設定済み。
+/// Design trade-off: the ITAD and CheapShark calls are bundled into one activity, which bends the "one external I/O per activity" guideline.
+/// The fallback (CheapShark only when ITAD has no result) cannot be decided in the orchestrator because it cannot branch deterministically on activity results.
+/// Retries are configured per activity by the calling orchestrator.
 /// </summary>
 public class GetLowestPrice(IHttpClientFactory httpClientFactory, IConfiguration configuration, ILogger<GetLowestPrice> logger)
 {
-    /// <summary>ITAD における Steam ショップの内部 ID</summary>
+    /// <summary>Internal ID of the Steam shop in ITAD.</summary>
     private const int SteamShopId = 61;
 
     /// <summary>
-    /// アクティビティのエントリーポイント。ITAD または CheapShark から過去最安値を取得して返す。
+    /// Activity entry point. Gets and returns the historical lowest price from ITAD or CheapShark.
     /// </summary>
-    /// <param name="appId">最安値を調べる Steam アプリ ID</param>
-    /// <returns>過去最安値の取得結果。取得できない場合は <see langword="null"/></returns>
+    /// <param name="appId">Steam app ID to look up.</param>
+    /// <returns>The lowest price result, or <see langword="null"/> if it cannot be fetched.</returns>
     [Function(FunctionNames.GetLowestPriceActivity)]
     public async Task<LowestPriceResult?> GetLowestPriceActivity([ActivityTrigger] long appId)
     {
@@ -50,7 +45,7 @@ public class GetLowestPrice(IHttpClientFactory httpClientFactory, IConfiguration
     }
 
     /// <summary>
-    /// IsThereAnyDeal API から、Steam ストアにおける過去最安値 (JPY) を取得する
+    /// Gets the historical lowest price (JPY) in the Steam store from the IsThereAnyDeal API.
     /// </summary>
     private async Task<LowestPriceResult?> GetFromItadAsync(long appId)
     {
@@ -65,7 +60,7 @@ public class GetLowestPrice(IHttpClientFactory httpClientFactory, IConfiguration
         {
             HttpClient client = httpClientFactory.CreateClient(nameof(GetLowestPrice));
 
-            // Steam アプリ ID から ITAD のゲーム ID を引く
+            // Resolve the ITAD game ID from the Steam app ID.
             var lookupUrl = $"https://api.isthereanydeal.com/games/lookup/v1?key={apiKey}&appid={appId}";
             ItadLookupResponse? lookup = await client.GetFromJsonAsync<ItadLookupResponse>(lookupUrl);
             if (lookup is not { Found: true, Game: not null })
@@ -74,7 +69,7 @@ public class GetLowestPrice(IHttpClientFactory httpClientFactory, IConfiguration
                 return null;
             }
 
-            // ITAD のゲーム ID から Steam ショップでの過去最安値 (日本円) を取得する
+            // Get the lowest price (JPY) in the Steam shop from the ITAD game ID.
             var storeLowUrl = $"https://api.isthereanydeal.com/games/storelow/v2?key={apiKey}&country=JP&shops={SteamShopId}";
             using StringContent body = new(JsonSerializer.Serialize(new[] { new { id = lookup.Game.Id } }), Encoding.UTF8, "application/json");
             using HttpResponseMessage response = await client.PostAsync(new Uri(storeLowUrl), body);
@@ -104,8 +99,8 @@ public class GetLowestPrice(IHttpClientFactory httpClientFactory, IConfiguration
     }
 
     /// <summary>
-    /// CheapShark API から過去最安値を取得する (フォールバック)。
-    /// CheapShark は USD 建てのみのため、為替換算は行わずそのまま返す。
+    /// Gets the historical lowest price from the CheapShark API (fallback).
+    /// CheapShark prices are USD only, so the value is returned as is without currency conversion.
     /// </summary>
     private async Task<LowestPriceResult?> GetFromCheapSharkAsync(long appId)
     {

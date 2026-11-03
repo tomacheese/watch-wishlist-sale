@@ -8,15 +8,15 @@ using WatchWishlistSale.Models.Wishlist;
 namespace WatchWishlistSale.Activities;
 
 /// <summary>
-/// 指定した Steam アプリ ID の詳細情報 (価格情報含む) を Steam ストア API から取得する Activity
+/// Activity that fetches the details (including price information) of a Steam app ID from the Steam store API.
 /// </summary>
 public class GetAppDetails(IHttpClientFactory httpClientFactory, ILogger<GetAppDetails> logger)
 {
     /// <summary>
-    /// アクティビティのエントリーポイント。指定した Steam アプリ ID の詳細情報を取得して返す。
+    /// Activity entry point. Fetches and returns the details of the given Steam app ID.
     /// </summary>
-    /// <param name="appId">詳細情報を取得する Steam アプリ ID</param>
-    /// <returns>アプリ詳細情報。取得できない場合は <see langword="null"/></returns>
+    /// <param name="appId">Steam app ID to fetch details for.</param>
+    /// <returns>The app details, or <see langword="null"/> if they cannot be fetched.</returns>
     [Function(FunctionNames.GetAppDetailsActivity)]
     public async Task<AppDetails?> GetAppDetailsActivity([ActivityTrigger] long appId)
     {

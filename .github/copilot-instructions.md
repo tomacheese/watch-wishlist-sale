@@ -1,30 +1,28 @@
-# GitHub Copilot コードレビュー向け指示
+# Review instructions for GitHub Copilot
 
-本リポジトリは Steam のウィッシュリストを巡回し値下がりを Discord に通知する、.NET 10 Azure Durable Functions アプリ(isolated worker)です。C# の変更は以下の観点でレビューしてください。
+See `AGENTS.md` for the project overview, conventions and safety rules. Review C# changes with these focus points.
 
-## Durable Functions の正しさ(最優先)
+## Durable Functions correctness (highest priority)
 
-- オーケストレータ(`Orchestrations/`)内の非決定的なコードを指摘する: `DateTime.Now`/`DateTime.UtcNow`、`Guid.NewGuid()`、乱数、環境変数の読み取り、直接の HTTP/ファイル I/O、`Task.Delay` など。これらはアクティビティに置くか、Durable が提供するコンテキスト API を使う必要がある。
-- オーケストレータはアクティビティの調整と durable なタイマー/コンテキストの利用のみを行うべき。ビジネスロジックや外部呼び出しは `Activities/` に置く。
-- `Triggers/Crawler.cs` のシングルトンパターン(プロファイルごとの固定インスタンス ID、既に `Running`/`Pending` の場合はスキップ)を壊す変更に注意する。壊すと実行が重複しうる。
-- 「初回実行は通知をスキップする」挙動を維持する: エンティティ(`Entities/NotificationStateEntity.cs`)が初回呼び出し時に `isFirstRun` を報告し、オーケストレータがそれが true の間 Discord 通知をスキップする。どちらか片方だけを壊す変更を指摘する。
+- Flag non-deterministic code in the orchestrator (`Orchestrations/`): `DateTime.Now`/`UtcNow`, `Guid.NewGuid()`, random numbers, environment variable reads, direct HTTP/file I/O, `Task.Delay`. It belongs in activities or must use the Durable context APIs.
+- Business logic and external calls belong in `Activities/`, not the orchestrator.
+- Flag changes that break the singleton pattern in `Triggers/Crawler.cs` (fixed per-profile instance ID, skip when already `Running`/`Pending`).
+- Keep the "first run skips notification" behavior: `Entities/NotificationStateEntity.cs` reports `isFirstRun` and the orchestrator skips Discord while it is true. Flag changes that break only one side.
 
-## このリポジトリで強制される規約
+## Repository conventions
 
-- Function 名は `Common/FunctionNames.cs` の定数を使用し、文字列リテラルを使わない。
-- HTTP アクセスは注入された `IHttpClientFactory` 経由で行う。`new HttpClient()` は指摘する。
-- public な型・メンバーには XML doc コメント(`///`)が必要(無いとビルド警告になる)。
-- コード内コメントと XML doc は日本語、ログ・例外メッセージは英語で書かれている。日本語コメントを問題として指摘しない。
-- モデル/DTO は `record` 型を優先する。Nullable reference types が有効なため、抑制された・不誠実な null 許容性(根拠のない `!`)を指摘する。
+- Function names use the `Common/FunctionNames.cs` constants, not string literals.
+- HTTP access goes through the injected `IHttpClientFactory`; flag `new HttpClient()`.
+- Public types and members need XML doc comments (`///`).
+- Prefer `record` for models; flag suppressed or dishonest nullability (unjustified `!`).
 
-## セキュリティ・設定
+## Security and configuration
 
-- ハードコードされたシークレットや環境固有の値(Discord Webhook URL、`ITAD_API_KEY`、`STEAM_PROFILE_ID`)を指摘する。これらは `IConfiguration` 経由で取得する必要がある。
-- `local.settings.json` は絶対にリポジトリに追加しない。
-- Steam/ITAD/CheapShark のレスポンスは信頼できないため、外部 HTTP レスポンスのステータスチェック(`IsSuccessStatusCode`)とデシリアライズ結果の null チェックが行われているか確認する。
+- Flag hard-coded secrets or environment-specific values (Discord webhook URL, `ITAD_API_KEY`, `STEAM_PROFILE_ID`); they must come from `IConfiguration`.
+- `local.settings.json` must never be added to the repository.
+- Steam/ITAD/CheapShark responses are untrusted: check `IsSuccessStatusCode` and null deserialization results.
 
-## 指摘すべきでない事項
+## Do not flag
 
-- CRLF 改行、4 スペースインデント、allman ブレース — `.editorconfig` で強制されている。
-- 日本語のコメント・ドキュメント。
-- `docs/` 配下の学習用ロングフォームドキュメント。
+- CRLF line endings, 4-space indent, Allman braces (enforced by `.editorconfig`).
+- Long-form learning documents under `docs/`.

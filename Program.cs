@@ -9,7 +9,7 @@ FunctionsApplicationBuilder builder = FunctionsApplication.CreateBuilder(args);
 
 builder.ConfigureFunctionsWebApplication();
 
-// Steam / Discord / IsThereAnyDeal などへの HTTP アクセスに使用する HttpClient を DI に登録する
+// Register HttpClient factory for HTTP access to Steam, Discord, IsThereAnyDeal and others.
 builder.Services.AddHttpClient();
 
 IOpenTelemetryBuilder openTelemetry = builder.Services.AddOpenTelemetry()

@@ -11,13 +11,13 @@ using WatchWishlistSale.Models.Wishlist;
 namespace WatchWishlistSale.Orchestrations;
 
 /// <summary>
-/// ウィッシュリストのセール状況を監視し、未通知の値下げを Discord に通知するオーケストレーター
+/// Orchestrator that watches the wishlist for sales and notifies Discord of price drops not yet notified.
 /// </summary>
 public static class WatchWishlistOrchestrator
 {
     /// <summary>
-    /// 外部 API 呼び出しを伴うアクティビティの再試行ポリシー。
-    /// 一時的なエラー (ネットワーク不調やレート制限など) に対し、間隔を空けながら最大 3 回まで試行する。
+    /// Retry policy for activities that call external APIs.
+    /// Transient errors (network issues, rate limits) are retried with exponential backoff, up to 3 attempts in total.
     /// </summary>
     private static readonly TaskOptions ActivityRetryOptions = TaskOptions.FromRetryPolicy(new RetryPolicy(
         maxNumberOfAttempts: 3,
@@ -25,38 +25,33 @@ public static class WatchWishlistOrchestrator
         backoffCoefficient: 2.0));
 
     /// <summary>
-    /// Fan-out 時に同時実行するアクティビティの最大数。
-    /// 外部 API のレート制限を考慮し、件数が多い場合でも全件を一度に Fan-out せず、
-    /// この件数ずつチャンクに分け、チャンクの間に待機を挟みながら順番に処理する
-    /// (待機時間は呼び出し先ごとに <see cref="AppDetailsFanOutInterval"/> /
-    /// <see cref="LowestPriceFanOutInterval"/> で個別に定義している)。
+    /// Maximum number of activities run concurrently in one fan-out.
+    /// To respect external API rate limits, items are processed in chunks of this size
+    /// with a wait between chunks instead of fanning out all at once
+    /// (the wait is defined per callee by <see cref="AppDetailsFanOutInterval"/> and
+    /// <see cref="LowestPriceFanOutInterval"/>).
     /// </summary>
     private const int MaxFanOutConcurrency = 3;
 
     /// <summary>
-    /// GetAppDetailsActivity の Fan-out チャンク間で空ける待機時間。
-    /// 呼び出し先の Steam ストア appdetails API は実測で約 200 リクエスト / 5 分
-    /// (= 1 リクエストあたり平均約 1.5 秒) という厳しいレート制限がかかっているため、
-    /// MaxFanOutConcurrency (3) 件のチャンクを約 5 秒間隔で送出することで、
-    /// 平均レートを制限値未満 (約 0.6 req/sec) に抑える。
+    /// Wait between fan-out chunks of GetAppDetailsActivity.
+    /// Spreads the requests out so the average rate stays under the Steam store appdetails API rate limit.
     /// </summary>
     private static readonly TimeSpan AppDetailsFanOutInterval = TimeSpan.FromSeconds(5);
 
     /// <summary>
-    /// GetLowestPriceActivity の Fan-out チャンク間で空ける待機時間。
-    /// 呼び出し先の IsThereAnyDeal API のレート制限は約 1000 リクエスト / 5 分
-    /// (= 約 3.3 req/sec) だが、このアクティビティ 1 回につき最大 2 回の HTTP リクエストが
-    /// 発生し得るため、MaxFanOutConcurrency (3) 件のチャンク (= 最大 6 リクエスト) を
-    /// 約 2 秒間隔で送出し、余裕を持たせている。
+    /// Wait between fan-out chunks of GetLowestPriceActivity.
+    /// Spreads the requests out to stay under the IsThereAnyDeal rate limit,
+    /// leaving headroom because one activity run can issue more than one HTTP request.
     /// </summary>
     private static readonly TimeSpan LowestPriceFanOutInterval = TimeSpan.FromSeconds(2);
 
     /// <summary>
-    /// オーケストレーターのエントリーポイント。
-    /// ウィッシュリスト取得・詳細情報収集・フィルタリング・最安値取得・Discord 通知・状態更新の一連のフローを実行する。
+    /// Orchestrator entry point. Runs the whole flow: fetch the wishlist, collect app details, filter sale apps,
+    /// fetch lowest prices, send the Discord notification and update the notification state.
     /// </summary>
-    /// <param name="context">オーケストレーター実行コンテキスト</param>
-    /// <returns>オーケストレーション完了を表す非同期タスク</returns>
+    /// <param name="context">Orchestration execution context.</param>
+    /// <returns>A task that completes when the orchestration finishes.</returns>
     [Function(FunctionNames.CrawlerOrchestrator)]
     public static async Task RunOrchestrator(
         [OrchestrationTrigger] TaskOrchestrationContext context)
@@ -71,10 +66,9 @@ public static class WatchWishlistOrchestrator
         List<long> appIds = await context.CallActivityAsync<List<long>>(FunctionNames.GetWishlistAppIdsActivity, profileId, ActivityRetryOptions);
         logger.LogInformation("Got {AppIdsCount} app ids.", appIds.Count);
 
-        // 2. 各 App ID の詳細情報を並列取得 (Fan-out)
-        // 全件を一度に Fan-out すると外部 API のレート制限に抵触しかねないため、
-        // MaxFanOutConcurrency 件ずつチャンクに分け、チャンクの間に AppDetailsFanOutInterval だけ
-        // 待機を挟みながら Fan-out/Fan-in することで、実効的なリクエストレートを制限値未満に抑える
+        // 2. Fetch the details of each app ID in parallel (fan-out).
+        // Fanning out everything at once could hit the external API rate limit, so fan out/in in chunks of
+        // MaxFanOutConcurrency and wait AppDetailsFanOutInterval between chunks to keep the effective rate below the limit.
         List<AppDetails?> appDetailsResults = [];
         long[][] appIdChunks = [.. appIds.Chunk(MaxFanOutConcurrency)];
         for (var chunkIndex = 0; chunkIndex < appIdChunks.Length; chunkIndex++)
@@ -99,11 +93,11 @@ public static class WatchWishlistOrchestrator
         List<AppDetails> saleApps = await context.CallActivityAsync<List<AppDetails>>(FunctionNames.FilterSaleAppsActivity, appDetailsList);
         logger.LogInformation("Got {SaleAppsCount} sale apps", saleApps.Count);
 
-        // 4. 通知状態エンティティ (旧実装の notified.json 相当) から、前回までの通知状況を取得
+        // 4. Get the notification history from the notification state entity.
         EntityInstanceId entityId = new(FunctionNames.NotificationStateEntity, profileId);
         NotificationSnapshot snapshot = await context.Entities.CallEntityAsync<NotificationSnapshot>(entityId, NotificationStateEntity.OperationGetSnapshot);
 
-        // 5. 「前回通知時から価格が変わった」または「新たにセール対象になった」アプリのみを抽出
+        // 5. Keep only apps whose price changed since the last notification, or that newly went on sale.
         List<AppDetails> targetApps = [.. saleApps.Where(app =>
         {
             var currentPrice = app.PriceOverview!.Final / 100m;
@@ -111,8 +105,8 @@ public static class WatchWishlistOrchestrator
         })];
         logger.LogInformation("Got {TargetAppsCount} apps to notify", targetApps.Count);
 
-        // 6. 通知対象アプリの過去最安値を並列取得 (Fan-out)
-        // こちらも同様に、チャンクに分けて LowestPriceFanOutInterval だけ待機を挟みながら Fan-out/Fan-in する
+        // 6. Fetch the lowest prices of the apps to notify in parallel (fan-out).
+        // Same as above: chunked, waiting LowestPriceFanOutInterval between chunks.
         List<LowestPriceResult?> lowestPrices = [];
         AppDetails[][] targetAppChunks = [.. targetApps.Chunk(MaxFanOutConcurrency)];
         for (var chunkIndex = 0; chunkIndex < targetAppChunks.Length; chunkIndex++)
@@ -130,7 +124,7 @@ public static class WatchWishlistOrchestrator
 
         List<SaleNotification> notifications = [.. targetApps.Select((app, index) => new SaleNotification(app, lowestPrices[index]))];
 
-        // 7. 初回実行時はウィッシュリスト全体が通知対象になってしまうため、Discord への送信は行わず状態の記録のみ行う
+        // 7. On the first run the whole wishlist would be a notification target, so only record the state and skip Discord.
         if (snapshot.isFirstRun)
         {
             logger.LogInformation("First run detected. Recording state without sending Discord notification for {Count} apps", notifications.Count);
@@ -146,7 +140,7 @@ public static class WatchWishlistOrchestrator
             await context.Entities.CallEntityAsync(entityId, NotificationStateEntity.OperationSetNotified, new NotifiedEntry(app.SteamAppId, currentPrice));
         }
 
-        // 9. セールが終了し対象から外れたアプリの通知記録を削除
+        // 9. Remove notification records of apps whose sale has ended.
         foreach (var notifiedAppId in snapshot.notifiedPrices.Keys)
         {
             if (saleApps.Any(app => app.SteamAppId == notifiedAppId))

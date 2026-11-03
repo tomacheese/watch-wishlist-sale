@@ -2,26 +2,26 @@ using System.Text.Json.Serialization;
 
 namespace WatchWishlistSale.Models.Pricing;
 
-/// <summary>CheapShark games (steamAppID 検索) のレスポンス要素</summary>
+/// <summary>Response element of CheapShark games (search by steamAppID).</summary>
 public class CheapSharkGameLookup
 {
-    /// <summary>CheapShark 内部のゲーム ID</summary>
+    /// <summary>CheapShark's internal game ID.</summary>
     [JsonPropertyName("gameID")]
     public string GameId { get; set; } = string.Empty;
 }
 
-/// <summary>CheapShark games (id 指定) のレスポンス</summary>
+/// <summary>Response of CheapShark games (by id).</summary>
 public class CheapSharkGameInfo
 {
-    /// <summary>過去最安値情報。取得できない場合は null</summary>
+    /// <summary>Lowest price information. Null if unavailable.</summary>
     [JsonPropertyName("cheapestPriceEver")]
     public CheapSharkCheapestPrice? CheapestPriceEver { get; set; }
 }
 
-/// <summary>CheapShark が返す過去最安値の詳細</summary>
+/// <summary>Lowest price details returned by CheapShark.</summary>
 public class CheapSharkCheapestPrice
 {
-    /// <summary>過去最安値 (USD 建て文字列。例: "4.99")</summary>
+    /// <summary>Lowest price as a USD string (for example "4.99").</summary>
     [JsonPropertyName("price")]
     public string Price { get; set; } = string.Empty;
 }

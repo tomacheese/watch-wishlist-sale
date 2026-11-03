@@ -11,21 +11,21 @@ using WatchWishlistSale.Models.Wishlist;
 namespace WatchWishlistSale.Activities;
 
 /// <summary>
-/// セール情報を Discord Webhook 経由で通知する Activity
+/// Activity that sends sale information through a Discord webhook.
 /// </summary>
 public class SendDiscordNotification(IHttpClientFactory httpClientFactory, IConfiguration configuration, ILogger<SendDiscordNotification> logger)
 {
-    /// <summary>Discord の embed.fields に設定できる件数の上限</summary>
+    /// <summary>Maximum number of entries allowed in Discord's embed.fields.</summary>
     private const int EmbedFieldLimit = 25;
 
-    /// <summary>通知 embed の色 (オレンジ)</summary>
+    /// <summary>Color of the notification embed (orange).</summary>
     private const int EmbedColor = 0xff_80_00;
 
     /// <summary>
-    /// アクティビティのエントリーポイント。セール通知一覧を Discord Webhook 経由で送信する。
+    /// Activity entry point. Sends the sale notifications through the Discord webhook.
     /// </summary>
-    /// <param name="notifications">送信するセール通知の一覧</param>
-    /// <returns>送信完了を表す非同期タスク</returns>
+    /// <param name="notifications">Sale notifications to send.</param>
+    /// <returns>A task that completes when sending is done.</returns>
     [Function(FunctionNames.SendDiscordNotificationActivity)]
     [SuppressMessage("Design", "CA1002", Justification = "Durable Functions Activity の入出力は List<T> を直接 JSON シリアライズするため変更不可。")]
     public async Task SendDiscordNotificationActivity([ActivityTrigger] List<SaleNotification> notifications)
@@ -46,7 +46,7 @@ public class SendDiscordNotification(IHttpClientFactory httpClientFactory, IConf
 
         HttpClient client = httpClientFactory.CreateClient(nameof(SendDiscordNotification));
 
-        // Discord の embed.fields は 25 件までという制限があるため、チャンク分割して送信する
+        // Discord limits embed.fields to 25 entries, so send in chunks.
         foreach (SaleNotification[] chunk in notifications.Chunk(EmbedFieldLimit))
         {
             DiscordEmbed embed = new()
@@ -70,7 +70,7 @@ public class SendDiscordNotification(IHttpClientFactory httpClientFactory, IConf
         }
     }
 
-    /// <summary>1 アプリ分の通知情報から Discord embed のフィールドを組み立てる</summary>
+    /// <summary>Builds a Discord embed field from the notification of one app.</summary>
     private static DiscordEmbedField BuildField(SaleNotification notification)
     {
         AppDetails app = notification.app;
