@@ -3,59 +3,59 @@ using System.Text.Json.Serialization;
 namespace WatchWishlistSale.Models.Wishlist;
 
 /// <summary>
-/// Steam ストア API (appdetails) が返すセール価格情報
+/// Sale price information returned by the Steam store API (appdetails).
 /// </summary>
 public class PriceOverview
 {
-    /// <summary>通貨コード (例: "JPY")</summary>
+    /// <summary>Currency code (for example "JPY").</summary>
     [JsonPropertyName("currency")]
     public string Currency { get; set; } = string.Empty;
 
-    /// <summary>定価 (通貨の最小単位の 100 倍。例: 1,000 円なら 100000)</summary>
+    /// <summary>List price, in 100 times the smallest currency unit (for example 100000 for 1,000 yen).</summary>
     [JsonPropertyName("initial")]
     public int Initial { get; set; }
 
-    /// <summary>割引後価格 (通貨の最小単位の 100 倍)</summary>
+    /// <summary>Discounted price, in 100 times the smallest currency unit.</summary>
     [JsonPropertyName("final")]
     public int Final { get; set; }
 
-    /// <summary>割引率 (%)。割引が無い場合は 0</summary>
+    /// <summary>Discount percentage. 0 when there is no discount.</summary>
     [JsonPropertyName("discount_percent")]
     public int DiscountPercent { get; set; }
 }
 
 /// <summary>
-/// Steam ストア API (appdetails) から取得するアプリ詳細情報のうち、本機能で利用するフィールドのみを表すモデル
+/// App details from the Steam store API (appdetails), limited to the fields this app uses.
 /// </summary>
 public class AppDetails
 {
-    /// <summary>アプリの種別 (game, dlc, music など)</summary>
+    /// <summary>App type (game, dlc, music, and so on).</summary>
     [JsonPropertyName("type")]
     public string Type { get; set; } = string.Empty;
 
-    /// <summary>アプリ名</summary>
+    /// <summary>App name.</summary>
     [JsonPropertyName("name")]
     public string Name { get; set; } = string.Empty;
 
-    /// <summary>Steam アプリ ID</summary>
+    /// <summary>Steam app ID.</summary>
     [JsonPropertyName("steam_appid")]
     public long SteamAppId { get; set; }
 
-    /// <summary>セール価格情報。未発売・販売終了などで価格が無い場合は null</summary>
+    /// <summary>Sale price information. Null when there is no price, such as unreleased or no longer sold.</summary>
     [JsonPropertyName("price_overview")]
     public PriceOverview? PriceOverview { get; set; }
 }
 
 /// <summary>
-/// Steam appdetails API のレスポンスにおける、1 アプリ分の結果
+/// Result for one app in the Steam appdetails API response.
 /// </summary>
 public class AppDetailsResult
 {
-    /// <summary>取得に成功したかどうか</summary>
+    /// <summary>Whether the fetch succeeded.</summary>
     [JsonPropertyName("success")]
     public bool Success { get; set; }
 
-    /// <summary>アプリ詳細情報 (success が false の場合は null)</summary>
+    /// <summary>App details (null when success is false).</summary>
     [JsonPropertyName("data")]
     public AppDetails? Data { get; set; }
 }

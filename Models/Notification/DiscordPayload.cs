@@ -2,46 +2,46 @@ using System.Text.Json.Serialization;
 
 namespace WatchWishlistSale.Models.Notification;
 
-/// <summary>Discord embed の 1 フィールド (インライン表示される項目)</summary>
+/// <summary>One field of a Discord embed (an item that can be shown inline).</summary>
 internal class DiscordEmbedField
 {
-    /// <summary>フィールドのタイトル</summary>
+    /// <summary>Field title.</summary>
     [JsonPropertyName("name")]
     public string Name { get; set; } = string.Empty;
 
-    /// <summary>フィールドの本文</summary>
+    /// <summary>Field body.</summary>
     [JsonPropertyName("value")]
     public string Value { get; set; } = string.Empty;
 
-    /// <summary>他フィールドとインライン (横並び) 表示するかどうか</summary>
+    /// <summary>Whether to show the field inline (side by side) with other fields.</summary>
     [JsonPropertyName("inline")]
     public bool Inline { get; set; }
 }
 
-/// <summary>Discord の embed オブジェクト</summary>
+/// <summary>Discord embed object.</summary>
 internal class DiscordEmbed
 {
-    /// <summary>embed のタイトル</summary>
+    /// <summary>Embed title.</summary>
     [JsonPropertyName("title")]
     public string Title { get; set; } = string.Empty;
 
-    /// <summary>embed のフィールド一覧</summary>
+    /// <summary>Embed fields.</summary>
     [JsonPropertyName("fields")]
     public List<DiscordEmbedField> Fields { get; set; } = [];
 
-    /// <summary>embed のタイムスタンプ (ISO 8601 形式)</summary>
+    /// <summary>Embed timestamp (ISO 8601).</summary>
     [JsonPropertyName("timestamp")]
     public string Timestamp { get; set; } = string.Empty;
 
-    /// <summary>embed のサイドバーカラー (RGB 整数値)</summary>
+    /// <summary>Embed sidebar color (RGB integer).</summary>
     [JsonPropertyName("color")]
     public int Color { get; set; }
 }
 
-/// <summary>Discord Webhook に POST するペイロード</summary>
+/// <summary>Payload POSTed to the Discord webhook.</summary>
 internal class DiscordWebhookPayload
 {
-    /// <summary>送信する embed 一覧</summary>
+    /// <summary>Embeds to send.</summary>
     [JsonPropertyName("embeds")]
     public List<DiscordEmbed> Embeds { get; set; } = [];
 }

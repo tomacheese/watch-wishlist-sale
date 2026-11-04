@@ -1,30 +1,29 @@
 namespace WatchWishlistSale.Models.Notification;
 
 /// <summary>
-/// 通知済みのアプリ ID と、その時点の通知価格 (円) の組
+/// Pair of a notified app ID and the price (yen) at notification time.
 /// </summary>
-/// <param name="appId">Steam アプリ ID</param>
-/// <param name="price">通知時点の価格 (円)</param>
+/// <param name="appId">Steam app ID.</param>
+/// <param name="price">Price (yen) at notification time.</param>
 public record NotifiedEntry(long appId, decimal price);
 
 /// <summary>
-/// NotificationStateEntity の状態スナップショット
+/// State snapshot of NotificationStateEntity.
 /// </summary>
-/// <param name="isFirstRun">エンティティが今回が初回呼び出しであるかどうか</param>
-/// <param name="notifiedPrices">アプリ ID と、最後に通知した価格 (円) のマップ</param>
+/// <param name="isFirstRun">Whether this is the first call to the entity.</param>
+/// <param name="notifiedPrices">Map of app ID to the last notified price (yen).</param>
 public record NotificationSnapshot(bool isFirstRun, Dictionary<long, decimal> notifiedPrices);
 
 /// <summary>
-/// NotificationStateEntity が保持する内部状態
+/// Internal state held by NotificationStateEntity.
 /// </summary>
 public class NotificationState
 {
     /// <summary>
-    /// このエンティティが一度でも操作されたことがあるかどうか。
-    /// 旧実装の「notified.json が存在するか」(初回起動判定) に相当する。
+    /// Whether the entity has ever been operated on. Used for first-run detection.
     /// </summary>
     public bool Initialized { get; set; }
 
-    /// <summary>アプリ ID と、最後に通知した価格 (円) のマップ (旧実装の notified.json に相当)</summary>
+    /// <summary>Map of app ID to the last notified price (yen).</summary>
     public Dictionary<long, decimal> NotifiedPrices { get; } = [];
 }

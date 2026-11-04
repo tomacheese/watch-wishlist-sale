@@ -1,10 +1,10 @@
 namespace WatchWishlistSale.Models.Pricing;
 
 /// <summary>
-/// 最安値の取得結果
+/// Result of a lowest price lookup.
 /// </summary>
-/// <param name="appId">Steam アプリ ID</param>
-/// <param name="price">過去最安値</param>
-/// <param name="currency">通貨コード (例: "JPY", "USD")</param>
-/// <param name="source">取得元 ("ITAD" または "CheapShark")</param>
+/// <param name="appId">Steam app ID.</param>
+/// <param name="price">Historical lowest price.</param>
+/// <param name="currency">Currency code (for example "JPY", "USD").</param>
+/// <param name="source">Data source ("ITAD" or "CheapShark").</param>
 public record LowestPriceResult(long appId, decimal price, string currency, string source);
