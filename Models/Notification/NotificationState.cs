@@ -5,16 +5,20 @@ namespace WatchWishlistSale.Models.Notification;
 /// <summary>
 /// Pair of a notified app ID and the price (yen) at notification time.
 /// </summary>
-/// <param name="appId">Steam app ID.</param>
-/// <param name="price">Price (yen) at notification time.</param>
-public record NotifiedEntry(long appId, decimal price);
+/// <param name="AppId">Steam app ID.</param>
+/// <param name="Price">Price (yen) at notification time.</param>
+public record NotifiedEntry(
+    [property: JsonPropertyName("appId")] long AppId,
+    [property: JsonPropertyName("price")] decimal Price);
 
 /// <summary>
 /// State snapshot of NotificationStateEntity.
 /// </summary>
-/// <param name="isFirstRun">Whether this is the first call to the entity.</param>
-/// <param name="notifiedPrices">Map of app ID to the last notified price (yen).</param>
-public record NotificationSnapshot(bool isFirstRun, Dictionary<long, decimal> notifiedPrices);
+/// <param name="IsFirstRun">Whether this is the first call to the entity.</param>
+/// <param name="NotifiedPrices">Map of app ID to the last notified price (yen).</param>
+public record NotificationSnapshot(
+    [property: JsonPropertyName("isFirstRun")] bool IsFirstRun,
+    [property: JsonPropertyName("notifiedPrices")] Dictionary<long, decimal> NotifiedPrices);
 
 /// <summary>
 /// Internal state held by NotificationStateEntity.

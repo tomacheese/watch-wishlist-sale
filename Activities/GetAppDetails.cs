@@ -10,6 +10,8 @@ namespace WatchWishlistSale.Activities;
 /// <summary>
 /// Activity that fetches the details (including price information) of a Steam app ID from the Steam store API.
 /// </summary>
+/// <param name="httpClientFactory">Factory for HTTP clients.</param>
+/// <param name="logger">Logger for activity events.</param>
 public class GetAppDetails(IHttpClientFactory httpClientFactory, ILogger<GetAppDetails> logger)
 {
     /// <summary>

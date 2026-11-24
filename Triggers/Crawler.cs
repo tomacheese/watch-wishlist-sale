@@ -10,6 +10,8 @@ namespace WatchWishlistSale.Triggers;
 /// <summary>
 /// Timer-triggered function that starts <c>WatchWishlistOrchestrator</c> once per hour.
 /// </summary>
+/// <param name="configuration">Application configuration.</param>
+/// <param name="logger">Logger for trigger events.</param>
 public class Crawler(IConfiguration configuration, ILogger<Crawler> logger)
 {
     /// <summary>

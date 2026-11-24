@@ -19,6 +19,9 @@ namespace WatchWishlistSale.Activities;
 /// The fallback (CheapShark only when ITAD has no result) cannot be decided in the orchestrator because it cannot branch deterministically on activity results.
 /// Retries are configured per activity by the calling orchestrator.
 /// </summary>
+/// <param name="httpClientFactory">Factory for HTTP clients.</param>
+/// <param name="configuration">Application configuration.</param>
+/// <param name="logger">Logger for activity events.</param>
 public class GetLowestPrice(IHttpClientFactory httpClientFactory, IConfiguration configuration, ILogger<GetLowestPrice> logger)
 {
     /// <summary>Internal ID of the Steam shop in ITAD.</summary>

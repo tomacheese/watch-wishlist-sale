@@ -8,6 +8,7 @@
     <Nullable>enable</Nullable>
     <RootNamespace>WatchWishlistSale</RootNamespace>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
   <ItemGroup>

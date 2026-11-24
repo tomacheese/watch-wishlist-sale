@@ -11,6 +11,7 @@ namespace WatchWishlistSale.Activities;
 /// Whether the price changed since the last notification needs the NotificationStateEntity state,
 /// so that check is done in the orchestrator instead.
 /// </summary>
+/// <param name="logger">Logger for activity events.</param>
 public class FilterSaleApps(ILogger<FilterSaleApps> logger)
 {
     /// <summary>
@@ -34,7 +35,7 @@ public class FilterSaleApps(ILogger<FilterSaleApps> logger)
             }
 
             return app.PriceOverview.DiscountPercent != 0;
-        })];
+        }),];
 
         logger.LogInformation("Found {SaleAppsCount} sale apps", saleApps.Count);
         return saleApps;

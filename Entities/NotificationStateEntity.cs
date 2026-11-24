@@ -40,7 +40,7 @@ public class NotificationStateEntity : TaskEntity<NotificationState>
     public void SetNotified(NotifiedEntry entry)
     {
         ArgumentNullException.ThrowIfNull(entry);
-        State.NotifiedPrices[entry.appId] = entry.price;
+        State.NotifiedPrices[entry.AppId] = entry.Price;
     }
 
     /// <summary>

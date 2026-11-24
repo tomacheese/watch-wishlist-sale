@@ -13,6 +13,9 @@ namespace WatchWishlistSale.Activities;
 /// <summary>
 /// Activity that sends sale information through a Discord webhook.
 /// </summary>
+/// <param name="httpClientFactory">Factory for HTTP clients.</param>
+/// <param name="configuration">Application configuration.</param>
+/// <param name="logger">Logger for activity events.</param>
 public class SendDiscordNotification(IHttpClientFactory httpClientFactory, IConfiguration configuration, ILogger<SendDiscordNotification> logger)
 {
     /// <summary>Maximum number of entries allowed in Discord's embed.fields.</summary>
@@ -73,12 +76,12 @@ public class SendDiscordNotification(IHttpClientFactory httpClientFactory, IConf
     /// <summary>Builds a Discord embed field from the notification of one app.</summary>
     private static DiscordEmbedField BuildField(SaleNotification notification)
     {
-        AppDetails app = notification.app;
+        AppDetails app = notification.App;
         PriceOverview price = app.PriceOverview!;
         var initialPrice = price.Initial / 100m;
         var currentPrice = price.Final / 100m;
-        var lowestPriceText = notification.lowestPrice is { } lowest
-          ? $"{lowest.price}{lowest.currency}"
+        var lowestPriceText = notification.LowestPrice is { } lowest
+          ? $"{lowest.Price}{lowest.Currency}"
           : "不明";
 
         var urlSteamDb = $"https://steamdb.info/app/{app.SteamAppId}/";
