@@ -30,7 +30,7 @@ public class GetLowestPriceTests
         var result = await activity.GetLowestPriceActivity(10);
 
         Assert.Equal($"[\"{GameId}\"]", storeLowBody);
-        Assert.Equal("ITAD", result?.source);
+        Assert.Equal("ITAD", result?.Source);
     }
 
     private static HttpResponseMessage Json(string json) =>

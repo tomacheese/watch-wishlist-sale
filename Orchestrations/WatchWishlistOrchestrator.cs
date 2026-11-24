@@ -101,8 +101,8 @@ public static class WatchWishlistOrchestrator
         List<AppDetails> targetApps = [.. saleApps.Where(app =>
         {
             var currentPrice = app.PriceOverview!.Final / 100m;
-            return !snapshot.notifiedPrices.TryGetValue(app.SteamAppId, out var notifiedPrice) || notifiedPrice != currentPrice;
-        })];
+            return !snapshot.NotifiedPrices.TryGetValue(app.SteamAppId, out var notifiedPrice) || notifiedPrice != currentPrice;
+        }),];
         logger.LogInformation("Got {TargetAppsCount} apps to notify", targetApps.Count);
 
         // 6. Fetch the lowest prices of the apps to notify in parallel (fan-out).
@@ -125,7 +125,7 @@ public static class WatchWishlistOrchestrator
         List<SaleNotification> notifications = [.. targetApps.Select((app, index) => new SaleNotification(app, lowestPrices[index]))];
 
         // 7. On the first run the whole wishlist would be a notification target, so only record the state and skip Discord.
-        if (snapshot.isFirstRun)
+        if (snapshot.IsFirstRun)
         {
             logger.LogInformation("First run detected. Recording state without sending Discord notification for {Count} apps", notifications.Count);
         }
@@ -141,7 +141,7 @@ public static class WatchWishlistOrchestrator
         }
 
         // 9. Remove notification records of apps whose sale has ended.
-        foreach (var notifiedAppId in snapshot.notifiedPrices.Keys)
+        foreach (var notifiedAppId in snapshot.NotifiedPrices.Keys)
         {
             if (saleApps.Any(app => app.SteamAppId == notifiedAppId))
             {

@@ -14,6 +14,8 @@ namespace WatchWishlistSale.Activities;
 /// The endpoint needs no API key, but requires a numeric SteamID64
 /// (a custom URL name (vanity name) cannot be used).
 /// </summary>
+/// <param name="httpClientFactory">Factory for HTTP clients.</param>
+/// <param name="logger">Logger for activity events.</param>
 public class GetWishlistAppIds(IHttpClientFactory httpClientFactory, ILogger<GetWishlistAppIds> logger)
 {
     /// <summary>

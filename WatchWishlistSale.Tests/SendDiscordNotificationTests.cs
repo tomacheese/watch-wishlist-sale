@@ -37,9 +37,9 @@ public class SendDiscordNotificationTests
     [Theory]
     [InlineData(null)]
     [InlineData("")]
-    public async Task MissingWebhookThrows(string? webhookUrl)
+    public async Task MissingWebhookThrows(string? webhookSetting)
     {
-        SendDiscordNotification activity = CreateActivity(webhookUrl);
+        SendDiscordNotification activity = CreateActivity(webhookSetting);
 
         InvalidOperationException exception = await Assert.ThrowsAsync<InvalidOperationException>(
             () => activity.SendDiscordNotificationActivity(OneNotification()));
